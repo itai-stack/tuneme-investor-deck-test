@@ -1510,7 +1510,7 @@ body { touch-action: manipulation; }
 
 </style>
 
-<style id="v108-mobile-final">
+<style id="v109-mobile-final">
 @media (max-width: 900px), (pointer: coarse){
   html, body{
     overflow-y:auto !important;
@@ -1536,8 +1536,8 @@ body { touch-action: manipulation; }
 </style>
 
 
-<style id="v108-mobile-fit">
-/* --- BUILD V108: MOBILE FIT OVERRIDES (LAST WINS) --- */
+<style id="v109-mobile-fit">
+/* --- BUILD V109: MOBILE FIT OVERRIDES (LAST WINS) --- */
 @media (max-width: 980px), (pointer: coarse){
   html, body{
     overflow-y: auto !important;
@@ -1577,8 +1577,8 @@ body { touch-action: manipulation; }
 </style>
 
 
-<style id="v108-mobile-clean">
-/* --- BUILD V108: CLEAN MOBILE ARCHITECTURE (LAST WINS) --- */
+<style id="v109-mobile-clean">
+/* --- BUILD V109: CLEAN MOBILE ARCHITECTURE (LAST WINS) --- */
 @media (max-width: 980px), (pointer: coarse){
   html, body{
     height: auto !important;
@@ -1648,8 +1648,8 @@ body { touch-action: manipulation; }
 </style>
 
 
-<style id="v108-fit">
-/* --- BUILD V108: MOBILE FIT + ALIGNMENT (LAST WINS) --- */
+<style id="v109-fit">
+/* --- BUILD V109: MOBILE FIT + ALIGNMENT (LAST WINS) --- */
 @media (max-width: 980px), (pointer: coarse){
   /* Use PROXIMITY snap to reduce "skip" on iOS momentum */
   body{ scroll-snap-type: y proximity !important; }
@@ -1684,8 +1684,8 @@ body { touch-action: manipulation; }
 </style>
 
 
-<style id="v108-mobile-scroll">
-/* --- BUILD V108: MOBILE SMOOTH SCROLL + FULL CONTENT --- */
+<style id="v109-mobile-scroll">
+/* --- BUILD V109: MOBILE SMOOTH SCROLL + FULL CONTENT --- */
 @media (max-width: 980px), (pointer: coarse){
   /* Allow user to reach bottom of content: slides should NOT be internal scrollers */
   .slide, section.slide{
@@ -1707,8 +1707,8 @@ body { touch-action: manipulation; }
 </style>
 
 
-<style id="v108-mobile-last">
-/* --- BUILD V108: MOBILE LONG-SLIDE SCROLL + FIT (LAST WINS) --- */
+<style id="v109-mobile-last">
+/* --- BUILD V109: MOBILE LONG-SLIDE SCROLL + FIT (LAST WINS) --- */
 @media (max-width: 980px), (pointer: coarse){
   body{ scroll-snap-type: none !important; } /* long slides must scroll fully */
   .deck{ transform:none !important; translate:none !important; display:block !important; width:100% !important; height:auto !important; overflow:visible !important; }
@@ -1743,8 +1743,8 @@ body { touch-action: manipulation; }
 </style>
 
 
-<style id="v108-desk-nav">
-/* --- BUILD V108: DESKTOP ARROWS --- */
+<style id="v109-desk-nav">
+/* --- BUILD V109: DESKTOP ARROWS --- */
 .deskNav{
   position: fixed;
   right: 18px;
@@ -1772,7 +1772,7 @@ body { touch-action: manipulation; }
 </style>
 
 
-<style id="v108-mobile-lock-scroll">
+<style id="v109-mobile-lock-scroll">
 @media (max-width: 980px), (pointer: coarse){
   html, body{
     height: 100% !important;
@@ -1821,7 +1821,7 @@ body { touch-action: manipulation; }
 </style>
 
 
-<style id="v108-mobile-bottom-fix">
+<style id="v109-mobile-bottom-fix">
 @media (max-width: 980px), (pointer: coarse){
   .slide, section.slide{
     overscroll-behavior: contain !important;
@@ -1838,8 +1838,8 @@ body { touch-action: manipulation; }
 </style>
 
 
-<style id="v108-mobile-bottom-more">
-/* --- BUILD V108: MORE BOTTOM SCROLL ROOM (SLIDES 4 & 6) --- */
+<style id="v109-mobile-bottom-more">
+/* --- BUILD V109: MORE BOTTOM SCROLL ROOM (SLIDES 4 & 6) --- */
 @media (max-width: 980px), (pointer: coarse){
   .deck .slide:nth-of-type(4),
   .deck .slide:nth-of-type(6),
@@ -1855,10 +1855,70 @@ body { touch-action: manipulation; }
 }
 </style>
 
+
+<style id="v109-mobile-simple">
+/* --- BUILD V109: SIMPLE MOBILE = FULL READABILITY ---
+   Fixes: "can't reach bottom" by removing nested scrolling + snap paging.
+   Mobile behavior:
+   - Page scrolls normally (body)
+   - Slides are vertical sections (auto height)
+   - Arrows jump to prev/next slide
+*/
+@media (max-width: 980px), (pointer: coarse){
+  html, body{
+    height: auto !important;
+    min-height: 100% !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    -webkit-overflow-scrolling: touch !important;
+    overscroll-behavior-y: auto !important;
+    touch-action: pan-y !important;
+    scroll-behavior: smooth !important;
+  }
+
+  /* Deck becomes a normal vertical flow container */
+  #deck, .deck{
+    height: auto !important;
+    overflow: visible !important;
+    display: block !important;
+    transform: none !important;
+    translate: none !important;
+    will-change: auto !important;
+  }
+
+  /* Slides: no internal scroller, let body scroll */
+  .slide, section.slide{
+    width: 100% !important;
+    max-width: 100% !important;
+    height: auto !important;
+    min-height: 100dvh !important;
+    overflow: visible !important;
+    padding-top: calc(12px + env(safe-area-inset-top)) !important;
+    padding-bottom: calc(36px + env(safe-area-inset-bottom)) !important;
+    padding-left: calc(10px + env(safe-area-inset-left)) !important;
+    padding-right: calc(10px + env(safe-area-inset-right)) !important;
+  }
+
+  /* Mobile logo size */
+  .logoPill{ padding: 6px 10px !important; border-radius: 14px !important; }
+  .logoPill img{ height: 22px !important; }
+  .logoPill span{ font-size: 12px !important; }
+
+  img, video, canvas, svg{ max-width: 100% !important; height: auto !important; }
+  h1{ font-size: clamp(30px, 7.2vw, 46px) !important; line-height: 1.06 !important; }
+  h2{ font-size: clamp(24px, 6.0vw, 40px) !important; line-height: 1.08 !important; }
+  p, li{ font-size: clamp(14px, 3.9vw, 18px) !important; line-height: 1.45 !important; }
+
+  .two, .twoEq, .team, .chartWrap, .steps{ display:flex !important; flex-direction:column !important; gap:16px !important; align-items:stretch !important; }
+  .kpis{ grid-template-columns: 1fr 1fr !important; gap: 10px !important; }
+  .viz{ height: min(280px, 38vh) !important; }
+}
+</style>
+
 </head>
 <body>
 
-<div id="tm-build-stamp">BUILD V108</div>
+<div id="tm-build-stamp">BUILD V109</div>
 
 
 <!-- === Floating Share Button (always visible) === -->
@@ -3476,7 +3536,7 @@ btn && btn.addEventListener('pointerup', (e)=>{ e.preventDefault(); e.stopPropag
 
 
 <script>
-/* === v108 HOTFIX: Share modal event delegation (fix iOS 'dead' buttons) === */
+/* === v109 HOTFIX: Share modal event delegation (fix iOS 'dead' buttons) === */
 (function(){
   function onActivate(e){
     const t = e.target;
@@ -3558,8 +3618,8 @@ btn && btn.addEventListener('pointerup', (e)=>{ e.preventDefault(); e.stopPropag
 
 
 
-<style id="v108-mobile-final">
-/* --- BUILD V108: FINAL MOBILE OVERRIDES (last wins) --- */
+<style id="v109-mobile-final">
+/* --- BUILD V109: FINAL MOBILE OVERRIDES (last wins) --- */
 @media (max-width: 900px), (pointer: coarse){
   html, body{
     height: auto !important;
@@ -3617,7 +3677,7 @@ btn && btn.addEventListener('pointerup', (e)=>{ e.preventDefault(); e.stopPropag
 </style>
 
 
-<script id="v108-mobile-guard">
+<script id="v109-mobile-guard">
 (function(){
   const mobile = window.matchMedia && window.matchMedia('(max-width: 900px), (pointer: coarse)').matches;
   if(!mobile) return;
@@ -3641,7 +3701,7 @@ btn && btn.addEventListener('pointerup', (e)=>{ e.preventDefault(); e.stopPropag
 
 
 <script>
-/* --- BUILD V108: MOBILE NAV CONTROLLER (STABLE) --- */
+/* --- BUILD V109: MOBILE NAV CONTROLLER (STABLE) --- */
 (function(){
   const mq = window.matchMedia ? window.matchMedia('(max-width: 980px), (pointer: coarse)') : {matches:false};
   const isMobile = () => !!mq.matches;
@@ -3775,7 +3835,7 @@ btn && btn.addEventListener('pointerup', (e)=>{ e.preventDefault(); e.stopPropag
 
 
 <script>
-/* --- BUILD V108: CLEAN MOBILE CONTROLLER --- */
+/* --- BUILD V109: CLEAN MOBILE CONTROLLER --- */
 (function(){
   const mq = window.matchMedia ? window.matchMedia('(max-width: 980px), (pointer: coarse)') : {matches:false};
   const isMobile = () => !!mq.matches;
@@ -3883,7 +3943,7 @@ btn && btn.addEventListener('pointerup', (e)=>{ e.preventDefault(); e.stopPropag
 
 
 <script>
-/* --- BUILD V108: UNIFIED NAV (DESKTOP + MOBILE) --- */
+/* --- BUILD V109: UNIFIED NAV (DESKTOP + MOBILE) --- */
 (function(){
   const mq = window.matchMedia ? window.matchMedia('(max-width: 980px), (pointer: coarse)') : {matches:false};
   const isMobile = () => !!mq.matches;
@@ -4036,7 +4096,7 @@ btn && btn.addEventListener('pointerup', (e)=>{ e.preventDefault(); e.stopPropag
 
 
 <script>
-/* --- BUILD V108: DESKTOP ARROW HOOK --- */
+/* --- BUILD V109: DESKTOP ARROW HOOK --- */
 (function(){
   const prev = document.getElementById('prevBtn');
   const next = document.getElementById('nextBtn');
@@ -4056,7 +4116,7 @@ btn && btn.addEventListener('pointerup', (e)=>{ e.preventDefault(); e.stopPropag
 
 
 <script>
-/* --- BUILD V108: MOBILE "SCROLL UNTIL END THEN PAGE" --- */
+/* --- BUILD V109: MOBILE "SCROLL UNTIL END THEN PAGE" --- */
 (function(){
   const mq = window.matchMedia ? window.matchMedia('(max-width: 980px), (pointer: coarse)') : {matches:false};
   const isMobile = () => !!mq.matches;
@@ -4152,7 +4212,7 @@ btn && btn.addEventListener('pointerup', (e)=>{ e.preventDefault(); e.stopPropag
 
 
 <script>
-/* --- BUILD V108: MOBILE LOCKED PAGING + BOTTOM SPACERS --- */
+/* --- BUILD V109: MOBILE LOCKED PAGING + BOTTOM SPACERS --- */
 (function(){
   const mq = window.matchMedia ? window.matchMedia('(max-width: 980px), (pointer: coarse)') : {matches:false};
   const isMobile = () => !!mq.matches;
@@ -4262,7 +4322,7 @@ btn && btn.addEventListener('pointerup', (e)=>{ e.preventDefault(); e.stopPropag
 
 
 <script>
-/* --- BUILD V108: MOBILE READ-LOCK (DECK FREEZES WHILE SLIDE SCROLLS) --- */
+/* --- BUILD V109: MOBILE READ-LOCK (DECK FREEZES WHILE SLIDE SCROLLS) --- */
 (function(){
   const mq = window.matchMedia ? window.matchMedia('(max-width: 980px), (pointer: coarse)') : {matches:false};
   const isMobile = () => !!mq.matches;
@@ -4402,6 +4462,71 @@ btn && btn.addEventListener('pointerup', (e)=>{ e.preventDefault(); e.stopPropag
     deck.addEventListener('touchcancel', onTouchEnd, {passive:true});
     deck.addEventListener('wheel', onWheel, {passive:true});
   }
+
+  requestAnimationFrame(()=>requestAnimationFrame(init));
+})();
+</script>
+
+
+<script>
+/* --- BUILD V109: MOBILE ARROW JUMP (NO NESTED SCROLL) --- */
+(function(){
+  const mq = window.matchMedia ? window.matchMedia('(max-width: 980px), (pointer: coarse)') : {matches:false};
+  const isMobile = () => !!mq.matches;
+
+  const slides = Array.from(document.querySelectorAll('.slide, section.slide'));
+  if(!slides.length) return;
+
+  const prevBtn = document.getElementById('prevBtn') || document.getElementById('mPrev') ||
+                  document.querySelector('[data-nav="prev"], .navPrev, .mobilePrev, .prevBtn');
+  const nextBtn = document.getElementById('nextBtn') || document.getElementById('mNext') ||
+                  document.querySelector('[data-nav="next"], .navNext, .mobileNext, .nextBtn');
+
+  function currentIndex(){
+    const y = window.scrollY || document.documentElement.scrollTop || 0;
+    const h = window.innerHeight || 1;
+    const probe = y + h * 0.35;
+    let best = 0;
+    for(let i=0;i<slides.length;i++){
+      if(slides[i].offsetTop <= probe) best = i;
+      else break;
+    }
+    return best;
+  }
+
+  function go(i){
+    i = Math.max(0, Math.min(slides.length-1, i));
+    slides[i].scrollIntoView({behavior:'smooth', block:'start'});
+    const pnum = document.getElementById('pnum');
+    if(pnum) pnum.textContent = `${i+1}/${slides.length}`;
+  }
+
+  function bind(){
+    if(prevBtn){
+      prevBtn.onclick = (e)=>{ e.preventDefault(); e.stopPropagation(); go(currentIndex()-1); };
+      prevBtn.addEventListener('touchend', (e)=>{ e.preventDefault(); e.stopPropagation(); go(currentIndex()-1); }, {capture:true});
+    }
+    if(nextBtn){
+      nextBtn.onclick = (e)=>{ e.preventDefault(); e.stopPropagation(); go(currentIndex()+1); };
+      nextBtn.addEventListener('touchend', (e)=>{ e.preventDefault(); e.stopPropagation(); go(currentIndex()+1); }, {capture:true});
+    }
+
+    // Update page number on scroll (stable)
+    window.addEventListener('scroll', ()=>{
+      if(!isMobile()) return;
+      const i = currentIndex();
+      const pnum = document.getElementById('pnum');
+      if(pnum) pnum.textContent = `${i+1}/${slides.length}`;
+    }, {passive:true});
+  }
+
+  function init(){
+    if(!isMobile()) return;
+    bind();
+  }
+
+  if(mq.addEventListener) mq.addEventListener('change', init);
+  else if(mq.addListener) mq.addListener(init);
 
   requestAnimationFrame(()=>requestAnimationFrame(init));
 })();
