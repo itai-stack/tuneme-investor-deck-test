@@ -6,7 +6,7 @@
 <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate, max-age=0"/>
 <meta http-equiv="Pragma" content="no-cache"/>
 <meta http-equiv="Expires" content="0"/>
-<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>TuneMe | AI Voice Biomarkers Deck</title>
 <link href="https://fonts.googleapis.com" rel="preconnect"/>
 <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
@@ -1364,60 +1364,6 @@ a:hover{
   display: block;
 }
 
-
-/* --- v95 MOBILE UNLOCK PATCH --- */
-@media (max-width: 980px), (hover: none) and (pointer: coarse) {
-  html, body {
-    height: 100%;
-    min-height: 100%;
-    overflow: auto !important;
-    overscroll-behavior: contain;
-    -webkit-text-size-adjust: 100%;
-    touch-action: pan-y !important;
-  }
-  /* Common deck wrappers */
-  .deck, .slides, .slides-wrap, .viewport, .app, .root {
-    height: auto !important;
-    min-height: 100%;
-    overflow: visible !important;
-    touch-action: pan-y !important;
-  }
-  /* If a horizontal carousel exists, disable it on mobile */
-  .slides, .slides-track, .track, .carousel, .pages, .page-track {
-    transform: none !important;
-    translate: none !important;
-    will-change: auto !important;
-  }
-  /* Stack slides vertically and allow scrolling per slide */
-  .slides, .slides-track, .track, .carousel, .pages, .page-track {
-    display: block !important;
-  }
-  section.slide, .slide {
-    width: 100% !important;
-    max-width: 100% !important;
-    height: 100dvh !important;
-    min-height: 100dvh !important;
-    overflow: auto !important;
-    -webkit-overflow-scrolling: touch;
-    scroll-snap-align: start;
-    opacity: 1 !important;
-    visibility: visible !important;
-    pointer-events: auto !important;
-  }
-  /* Enable snap scrolling if wrapper supports it */
-  body {
-    scroll-snap-type: y mandatory;
-  }
-  /* Prevent “locked screen” overlays from intercepting taps */
-  .overlay, .click-catcher, .tap-layer, .nav-capture {
-    pointer-events: none !important;
-  }
-  /* Keep nav buttons clickable */
-  .nav, .nav * , .mobile-nav, .mobile-nav * {
-    pointer-events: auto !important;
-  }
-}
-
 </style>
 
 <style>
@@ -1563,10 +1509,49 @@ body { touch-action: manipulation; }
 }
 
 </style>
+
+<style>
+/* --- v96 MOBILE QUALITY PATCH --- */
+@media (max-width: 900px), (pointer: coarse){
+  html, body{
+    height: auto !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    -webkit-overflow-scrolling: touch;
+    touch-action: pan-y !important;
+  }
+  #deck{
+    transform: none !important;
+    display: block !important;
+    width: 100% !important;
+    height: auto !important;
+  }
+  .slide{
+    width: 100% !important;
+    max-width: 100% !important;
+    min-height: 100dvh !important;
+    height: auto !important;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch;
+    scroll-snap-align: start;
+    padding-top: calc(22px + env(safe-area-inset-top)) !important;
+    padding-bottom: calc(22px + env(safe-area-inset-bottom)) !important;
+    padding-left: calc(18px + env(safe-area-inset-left)) !important;
+    padding-right: calc(18px + env(safe-area-inset-right)) !important;
+  }
+  /* Make big hero content fit */
+  h1{ font-size: clamp(34px, 7.5vw, 56px) !important; line-height: 1.08 !important; }
+  h2{ font-size: clamp(26px, 6.2vw, 44px) !important; }
+  p, li{ font-size: clamp(15px, 3.8vw, 18px) !important; }
+  /* Keep nav always tappable */
+  .mobileNav{ z-index: 9999 !important; }
+}
+</style>
+
 </head>
 <body>
 
-<div id="tm-build-stamp">BUILD V95</div>
+<div id="tm-build-stamp">BUILD V96</div>
 
 
 <!-- === Floating Share Button (always visible) === -->
@@ -2363,7 +2348,7 @@ slides.forEach((s) => {
  dots.appendChild(dot);
  });
 
- function isStacked(){ return false; }
+ function isStacked(){ return window.matchMedia && window.matchMedia('(max-width: 900px), (pointer: coarse)').matches; }
 
 
  function applyFitScale(){
@@ -2391,15 +2376,41 @@ slides.forEach((s) => {
  }
 
 function update(){
-  deck.style.transform = `translateX(-${idx * 100}vw)`;
+  const stacked = isStacked();
+
+  // Update UI state
   pnum.textContent = `${idx+1}/${slides.length}`;
- Array.from(dots.children).forEach((d,i)=>d.className = i===idx ? 'on' : '');
- slides.forEach((s,i)=>s.classList.toggle('active', i===idx));
- applyFitScale();
- // announce
- toast.classList.add('on');
- clearTimeout(window.__t);
- window.__t = setTimeout(()=>toast.classList.remove('on'), 1100);
+  Array.from(dots.children).forEach((d,i)=>d.className = i===idx ? 'on' : '');
+  slides.forEach((s,i)=>s.classList.toggle('active', i===idx));
+
+  if(stacked){
+    // Mobile: vertical stack + native scroll (no transforms)
+    deck.style.transform = 'none';
+    deck.style.display = 'block';
+    deck.style.width = '100%';
+    deck.style.height = 'auto';
+
+    // Ensure slides are visible (avoid iOS repaint/opacity gating)
+    slides.forEach(s=>{ s.style.opacity='1'; s.style.visibility='visible'; s.style.pointerEvents='auto'; });
+
+    // Scroll to the requested slide
+    const target = slides[idx];
+    if(target && target.scrollIntoView){
+      target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    // No desktop fit-scaling or toast on mobile
+    return;
+  }
+
+  // Desktop: horizontal deck
+  deck.style.transform = `translateX(-${idx * 100}vw)`;
+  applyFitScale();
+
+  // announce
+  toast.classList.add('on');
+  clearTimeout(window.__t);
+  window.__t = setTimeout(()=>toast.classList.remove('on'), 1100);
  }
 
  function toggleFullscreen(){
@@ -2636,12 +2647,8 @@ function bind(el, dir){
     e.preventDefault();
   }
 
-  
-
   // prevent pinch-zoom gesture from breaking layout
-  document.addEventListener('gesturestart', (e)=>{ if(mq.matches){ e.preventDefault(); } }, { passive:false });
-})();
-</script>
+  </script>
 
 <!-- === Share /  (mobile helper) === -->
 <div id="tm-share-modal" style="
@@ -3198,7 +3205,7 @@ btn && btn.addEventListener('pointerup', (e)=>{ e.preventDefault(); e.stopPropag
 
 
 <script>
-/* === v95 HOTFIX: Share modal event delegation (fix iOS 'dead' buttons) === */
+/* === v96 HOTFIX: Share modal event delegation (fix iOS 'dead' buttons) === */
 (function(){
   function onActivate(e){
     const t = e.target;
@@ -3278,34 +3285,39 @@ btn && btn.addEventListener('pointerup', (e)=>{ e.preventDefault(); e.stopPropag
 
 
 <script>
-/* --- v95 MOBILE UNLOCK RUNTIME GUARD --- */
+/* --- v96 MOBILE STACK SYNC --- */
 (function(){
-  const isCoarse = window.matchMedia && window.matchMedia("(hover: none) and (pointer: coarse)").matches;
-  const isNarrow = window.matchMedia && window.matchMedia("(max-width: 980px)").matches;
-  if(!(isCoarse || isNarrow)) return;
+  if(!(window.matchMedia && window.matchMedia('(max-width: 900px), (pointer: coarse)').matches)) return;
+  const slides = Array.from(document.querySelectorAll('.slide'));
+  if(!slides.length) return;
 
-  // Ensure body scroll works
-  document.documentElement.style.overflow = "auto";
-  document.body.style.overflow = "auto";
-  document.body.style.touchAction = "pan-y";
+  // Make the page scroll-snap friendly
+  document.body.style.scrollSnapType = 'y mandatory';
 
-  // Neutralize any click-to-advance on the document (keep nav buttons working)
-  const blocker = (e) => {
-    // allow clicks on explicit controls only
-    const ok = e.target.closest("button, a, .nav, .mobile-nav, [data-nav], [data-action], [role='button']");
-    if(ok) return;
-    // Don't let global handlers treat this as navigation
-    e.stopPropagation();
-  };
-  document.addEventListener("click", blocker, true);
-  document.addEventListener("touchstart", blocker, true);
+  // Observe which slide is most visible
+  const obs = new IntersectionObserver((entries)=>{
+    // pick the entry with highest intersection ratio
+    let best = null;
+    for(const e of entries){
+      if(!best || e.intersectionRatio > best.intersectionRatio) best = e;
+    }
+    if(best && best.isIntersecting){
+      const i = slides.indexOf(best.target);
+      if(i >= 0){
+        // Update UI counters without triggering scrollIntoView loop
+        try{
+          const pnum = document.getElementById('pnum');
+          const dots = document.getElementById('dots');
+          if(pnum) pnum.textContent = `${i+1}/${slides.length}`;
+          if(dots) Array.from(dots.children).forEach((d,di)=>d.className = di===i ? 'on' : '');
+          slides.forEach((s,si)=>s.classList.toggle('active', si===i));
+          window.__tmMobileIdx = i;
+        }catch(_){}
+      }
+    }
+  }, { threshold: [0.55, 0.65, 0.75] });
 
-  // Make all slides visible (avoid iOS repaint/opacity gating)
-  document.querySelectorAll(".slide, section.slide").forEach(s => {
-    s.style.opacity = "1";
-    s.style.visibility = "visible";
-    s.style.pointerEvents = "auto";
-  });
+  slides.forEach(s=>obs.observe(s));
 })();
 </script>
 
