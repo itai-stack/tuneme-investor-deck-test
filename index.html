@@ -1510,7 +1510,7 @@ body { touch-action: manipulation; }
 
 </style>
 
-<style id="v109-mobile-final">
+<style id="v110-mobile-final">
 @media (max-width: 900px), (pointer: coarse){
   html, body{
     overflow-y:auto !important;
@@ -1536,8 +1536,8 @@ body { touch-action: manipulation; }
 </style>
 
 
-<style id="v109-mobile-fit">
-/* --- BUILD V109: MOBILE FIT OVERRIDES (LAST WINS) --- */
+<style id="v110-mobile-fit">
+/* --- BUILD V110: MOBILE FIT OVERRIDES (LAST WINS) --- */
 @media (max-width: 980px), (pointer: coarse){
   html, body{
     overflow-y: auto !important;
@@ -1577,8 +1577,8 @@ body { touch-action: manipulation; }
 </style>
 
 
-<style id="v109-mobile-clean">
-/* --- BUILD V109: CLEAN MOBILE ARCHITECTURE (LAST WINS) --- */
+<style id="v110-mobile-clean">
+/* --- BUILD V110: CLEAN MOBILE ARCHITECTURE (LAST WINS) --- */
 @media (max-width: 980px), (pointer: coarse){
   html, body{
     height: auto !important;
@@ -1648,8 +1648,8 @@ body { touch-action: manipulation; }
 </style>
 
 
-<style id="v109-fit">
-/* --- BUILD V109: MOBILE FIT + ALIGNMENT (LAST WINS) --- */
+<style id="v110-fit">
+/* --- BUILD V110: MOBILE FIT + ALIGNMENT (LAST WINS) --- */
 @media (max-width: 980px), (pointer: coarse){
   /* Use PROXIMITY snap to reduce "skip" on iOS momentum */
   body{ scroll-snap-type: y proximity !important; }
@@ -1684,8 +1684,8 @@ body { touch-action: manipulation; }
 </style>
 
 
-<style id="v109-mobile-scroll">
-/* --- BUILD V109: MOBILE SMOOTH SCROLL + FULL CONTENT --- */
+<style id="v110-mobile-scroll">
+/* --- BUILD V110: MOBILE SMOOTH SCROLL + FULL CONTENT --- */
 @media (max-width: 980px), (pointer: coarse){
   /* Allow user to reach bottom of content: slides should NOT be internal scrollers */
   .slide, section.slide{
@@ -1707,8 +1707,8 @@ body { touch-action: manipulation; }
 </style>
 
 
-<style id="v109-mobile-last">
-/* --- BUILD V109: MOBILE LONG-SLIDE SCROLL + FIT (LAST WINS) --- */
+<style id="v110-mobile-last">
+/* --- BUILD V110: MOBILE LONG-SLIDE SCROLL + FIT (LAST WINS) --- */
 @media (max-width: 980px), (pointer: coarse){
   body{ scroll-snap-type: none !important; } /* long slides must scroll fully */
   .deck{ transform:none !important; translate:none !important; display:block !important; width:100% !important; height:auto !important; overflow:visible !important; }
@@ -1743,8 +1743,8 @@ body { touch-action: manipulation; }
 </style>
 
 
-<style id="v109-desk-nav">
-/* --- BUILD V109: DESKTOP ARROWS --- */
+<style id="v110-desk-nav">
+/* --- BUILD V110: DESKTOP ARROWS --- */
 .deskNav{
   position: fixed;
   right: 18px;
@@ -1772,7 +1772,7 @@ body { touch-action: manipulation; }
 </style>
 
 
-<style id="v109-mobile-lock-scroll">
+<style id="v110-mobile-lock-scroll">
 @media (max-width: 980px), (pointer: coarse){
   html, body{
     height: 100% !important;
@@ -1821,7 +1821,7 @@ body { touch-action: manipulation; }
 </style>
 
 
-<style id="v109-mobile-bottom-fix">
+<style id="v110-mobile-bottom-fix">
 @media (max-width: 980px), (pointer: coarse){
   .slide, section.slide{
     overscroll-behavior: contain !important;
@@ -1838,8 +1838,8 @@ body { touch-action: manipulation; }
 </style>
 
 
-<style id="v109-mobile-bottom-more">
-/* --- BUILD V109: MORE BOTTOM SCROLL ROOM (SLIDES 4 & 6) --- */
+<style id="v110-mobile-bottom-more">
+/* --- BUILD V110: MORE BOTTOM SCROLL ROOM (SLIDES 4 & 6) --- */
 @media (max-width: 980px), (pointer: coarse){
   .deck .slide:nth-of-type(4),
   .deck .slide:nth-of-type(6),
@@ -1856,8 +1856,8 @@ body { touch-action: manipulation; }
 </style>
 
 
-<style id="v109-mobile-simple">
-/* --- BUILD V109: SIMPLE MOBILE = FULL READABILITY ---
+<style id="v110-mobile-simple">
+/* --- BUILD V110: SIMPLE MOBILE = FULL READABILITY ---
    Fixes: "can't reach bottom" by removing nested scrolling + snap paging.
    Mobile behavior:
    - Page scrolls normally (body)
@@ -1915,10 +1915,86 @@ body { touch-action: manipulation; }
 }
 </style>
 
+
+<style id="v110-mobile-overrides">
+/* --- BUILD V110: MOBILE SCROLL UNBLOCK + SPACING + NAV COLORS --- */
+@media (max-width: 980px), (pointer: coarse){
+  /* Hard unlock any global locks */
+  html, body{
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    height: auto !important;
+    min-height: 100% !important;
+    position: static !important;
+    touch-action: pan-y !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
+
+  /* Ensure no container clamps scrolling */
+  #deck, .deck, .slides, .track{
+    height: auto !important;
+    max-height: none !important;
+    overflow: visible !important;
+    position: static !important;
+    transform: none !important;
+    translate: none !important;
+  }
+
+  /* Slides must be normal document sections (no flex-centering traps) */
+  .slide, section.slide{
+    display: block !important;
+    flex: none !important;
+    height: auto !important;
+    max-height: none !important;
+    overflow: visible !important;
+    min-height: 0 !important;           /* allow true natural height */
+    padding-top: calc(22px + env(safe-area-inset-top)) !important;
+    padding-bottom: calc(180px + env(safe-area-inset-bottom)) !important; /* big bottom to guarantee reach */
+    padding-left: calc(18px + env(safe-area-inset-left)) !important;
+    padding-right: calc(18px + env(safe-area-inset-right)) !important;
+  }
+
+  /* Make internal flex containers stop forcing vertical centering */
+  .grow{
+    flex: none !important;
+    display: block !important;
+    justify-content: flex-start !important;
+  }
+
+  /* More breathing room */
+  p, li{ line-height: 1.55 !important; }
+  .card, .step{ padding: 18px !important; }
+  .two, .twoEq, .team, .chartWrap, .steps{ gap: 20px !important; }
+  .kpis{ gap: 12px !important; }
+  .kpi{ padding: 14px 14px 12px !important; }
+
+  /* Mobile logo smaller */
+  .logoPill{ padding: 6px 10px !important; border-radius: 14px !important; }
+  .logoPill img{ height: 22px !important; }
+  .logoPill span{ font-size: 12px !important; }
+
+  /* Nav arrows: force consistent color (no gray mismatch) */
+  .mobileNav button,
+  .nav button,
+  #prevBtn, #nextBtn, #mPrev, #mNext,
+  .navPrev, .navNext, .mobilePrev, .mobileNext, .prevBtn, .nextBtn{
+    opacity: 1 !important;
+    filter: none !important;
+    color: #ffffff !important;
+    background: rgba(255,255,255,0.10) !important;
+    border: 1px solid rgba(255,255,255,0.18) !important;
+  }
+  .mobileNav button:disabled,
+  .nav button:disabled{
+    opacity: 1 !important; /* keep same appearance even if disabled */
+  }
+}
+</style>
+
 </head>
 <body>
 
-<div id="tm-build-stamp">BUILD V109</div>
+<div id="tm-build-stamp">BUILD V110</div>
 
 
 <!-- === Floating Share Button (always visible) === -->
@@ -3536,7 +3612,7 @@ btn && btn.addEventListener('pointerup', (e)=>{ e.preventDefault(); e.stopPropag
 
 
 <script>
-/* === v109 HOTFIX: Share modal event delegation (fix iOS 'dead' buttons) === */
+/* === v110 HOTFIX: Share modal event delegation (fix iOS 'dead' buttons) === */
 (function(){
   function onActivate(e){
     const t = e.target;
@@ -3618,8 +3694,8 @@ btn && btn.addEventListener('pointerup', (e)=>{ e.preventDefault(); e.stopPropag
 
 
 
-<style id="v109-mobile-final">
-/* --- BUILD V109: FINAL MOBILE OVERRIDES (last wins) --- */
+<style id="v110-mobile-final">
+/* --- BUILD V110: FINAL MOBILE OVERRIDES (last wins) --- */
 @media (max-width: 900px), (pointer: coarse){
   html, body{
     height: auto !important;
@@ -3677,7 +3753,7 @@ btn && btn.addEventListener('pointerup', (e)=>{ e.preventDefault(); e.stopPropag
 </style>
 
 
-<script id="v109-mobile-guard">
+<script id="v110-mobile-guard">
 (function(){
   const mobile = window.matchMedia && window.matchMedia('(max-width: 900px), (pointer: coarse)').matches;
   if(!mobile) return;
@@ -3701,7 +3777,7 @@ btn && btn.addEventListener('pointerup', (e)=>{ e.preventDefault(); e.stopPropag
 
 
 <script>
-/* --- BUILD V109: MOBILE NAV CONTROLLER (STABLE) --- */
+/* --- BUILD V110: MOBILE NAV CONTROLLER (STABLE) --- */
 (function(){
   const mq = window.matchMedia ? window.matchMedia('(max-width: 980px), (pointer: coarse)') : {matches:false};
   const isMobile = () => !!mq.matches;
@@ -3835,7 +3911,7 @@ btn && btn.addEventListener('pointerup', (e)=>{ e.preventDefault(); e.stopPropag
 
 
 <script>
-/* --- BUILD V109: CLEAN MOBILE CONTROLLER --- */
+/* --- BUILD V110: CLEAN MOBILE CONTROLLER --- */
 (function(){
   const mq = window.matchMedia ? window.matchMedia('(max-width: 980px), (pointer: coarse)') : {matches:false};
   const isMobile = () => !!mq.matches;
@@ -3943,7 +4019,7 @@ btn && btn.addEventListener('pointerup', (e)=>{ e.preventDefault(); e.stopPropag
 
 
 <script>
-/* --- BUILD V109: UNIFIED NAV (DESKTOP + MOBILE) --- */
+/* --- BUILD V110: UNIFIED NAV (DESKTOP + MOBILE) --- */
 (function(){
   const mq = window.matchMedia ? window.matchMedia('(max-width: 980px), (pointer: coarse)') : {matches:false};
   const isMobile = () => !!mq.matches;
@@ -4096,7 +4172,7 @@ btn && btn.addEventListener('pointerup', (e)=>{ e.preventDefault(); e.stopPropag
 
 
 <script>
-/* --- BUILD V109: DESKTOP ARROW HOOK --- */
+/* --- BUILD V110: DESKTOP ARROW HOOK --- */
 (function(){
   const prev = document.getElementById('prevBtn');
   const next = document.getElementById('nextBtn');
@@ -4116,7 +4192,7 @@ btn && btn.addEventListener('pointerup', (e)=>{ e.preventDefault(); e.stopPropag
 
 
 <script>
-/* --- BUILD V109: MOBILE "SCROLL UNTIL END THEN PAGE" --- */
+/* --- BUILD V110: MOBILE "SCROLL UNTIL END THEN PAGE" --- */
 (function(){
   const mq = window.matchMedia ? window.matchMedia('(max-width: 980px), (pointer: coarse)') : {matches:false};
   const isMobile = () => !!mq.matches;
@@ -4212,7 +4288,7 @@ btn && btn.addEventListener('pointerup', (e)=>{ e.preventDefault(); e.stopPropag
 
 
 <script>
-/* --- BUILD V109: MOBILE LOCKED PAGING + BOTTOM SPACERS --- */
+/* --- BUILD V110: MOBILE LOCKED PAGING + BOTTOM SPACERS --- */
 (function(){
   const mq = window.matchMedia ? window.matchMedia('(max-width: 980px), (pointer: coarse)') : {matches:false};
   const isMobile = () => !!mq.matches;
@@ -4322,7 +4398,7 @@ btn && btn.addEventListener('pointerup', (e)=>{ e.preventDefault(); e.stopPropag
 
 
 <script>
-/* --- BUILD V109: MOBILE READ-LOCK (DECK FREEZES WHILE SLIDE SCROLLS) --- */
+/* --- BUILD V110: MOBILE READ-LOCK (DECK FREEZES WHILE SLIDE SCROLLS) --- */
 (function(){
   const mq = window.matchMedia ? window.matchMedia('(max-width: 980px), (pointer: coarse)') : {matches:false};
   const isMobile = () => !!mq.matches;
@@ -4469,7 +4545,7 @@ btn && btn.addEventListener('pointerup', (e)=>{ e.preventDefault(); e.stopPropag
 
 
 <script>
-/* --- BUILD V109: MOBILE ARROW JUMP (NO NESTED SCROLL) --- */
+/* --- BUILD V110: MOBILE ARROW JUMP (NO NESTED SCROLL) --- */
 (function(){
   const mq = window.matchMedia ? window.matchMedia('(max-width: 980px), (pointer: coarse)') : {matches:false};
   const isMobile = () => !!mq.matches;
@@ -4529,6 +4605,67 @@ btn && btn.addEventListener('pointerup', (e)=>{ e.preventDefault(); e.stopPropag
   else if(mq.addListener) mq.addListener(init);
 
   requestAnimationFrame(()=>requestAnimationFrame(init));
+})();
+</script>
+
+
+<script>
+/* --- BUILD V110: MOBILE SCROLL UNBLOCKER --- */
+(function(){
+  const mq = window.matchMedia ? window.matchMedia('(max-width: 980px), (pointer: coarse)') : {matches:false};
+  const isMobile = () => !!mq.matches;
+  if(!isMobile()) return;
+
+  function unlock(){
+    document.documentElement.style.overflowY = 'auto';
+    document.documentElement.style.overflowX = 'hidden';
+    document.body.style.overflowY = 'auto';
+    document.body.style.overflowX = 'hidden';
+    document.body.style.position = 'static';
+    document.documentElement.style.position = 'static';
+
+    // Remove any inline overflow hidden set earlier
+    ['overflow','overflowY','overflowX','height','touchAction'].forEach(k=>{
+      document.documentElement.style.removeProperty(k);
+      document.body.style.removeProperty(k);
+    });
+  }
+
+  // If any script adds a capture touchmove preventDefault, we block it by stopping propagation at the slide level.
+  function installStopper(){
+    document.addEventListener('touchmove', function(e){
+      // Allow native scrolling; block other handlers from hijacking.
+      // We DO NOT call preventDefault.
+      if(e.target && e.target.closest && e.target.closest('.slide, section.slide')){
+        e.stopImmediatePropagation();
+      }
+    }, {capture:true, passive:true});
+  }
+
+  // Extra: ensure bottom is reachable by adding invisible spacers to slide 4 & 6
+  function addSpacers(){
+    const slides = Array.from(document.querySelectorAll('.slide, section.slide'));
+    function add(i, h){
+      const s = slides[i];
+      if(!s) return;
+      if(s.querySelector('[data-v110-spacer]')) return;
+      const d = document.createElement('div');
+      d.setAttribute('data-v110-spacer','1');
+      d.style.height = (h||260) + 'px';
+      d.style.width = '1px';
+      d.style.opacity = '0';
+      d.style.pointerEvents = 'none';
+      s.appendChild(d);
+    }
+    add(3, 520); // slide 4
+    add(5, 520); // slide 6
+  }
+
+  requestAnimationFrame(()=>{
+    unlock();
+    installStopper();
+    addSpacers();
+  });
 })();
 </script>
 
