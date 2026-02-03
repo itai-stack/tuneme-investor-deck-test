@@ -1510,7 +1510,7 @@ body { touch-action: manipulation; }
 
 </style>
 
-<style id="v102-mobile-final">
+<style id="v103-mobile-final">
 @media (max-width: 900px), (pointer: coarse){
   html, body{
     overflow-y:auto !important;
@@ -1536,8 +1536,8 @@ body { touch-action: manipulation; }
 </style>
 
 
-<style id="v102-mobile-fit">
-/* --- BUILD V102: MOBILE FIT OVERRIDES (LAST WINS) --- */
+<style id="v103-mobile-fit">
+/* --- BUILD V103: MOBILE FIT OVERRIDES (LAST WINS) --- */
 @media (max-width: 980px), (pointer: coarse){
   html, body{
     overflow-y: auto !important;
@@ -1577,8 +1577,8 @@ body { touch-action: manipulation; }
 </style>
 
 
-<style id="v102-mobile-clean">
-/* --- BUILD V102: CLEAN MOBILE ARCHITECTURE (LAST WINS) --- */
+<style id="v103-mobile-clean">
+/* --- BUILD V103: CLEAN MOBILE ARCHITECTURE (LAST WINS) --- */
 @media (max-width: 980px), (pointer: coarse){
   html, body{
     height: auto !important;
@@ -1647,10 +1647,46 @@ body { touch-action: manipulation; }
 }
 </style>
 
+
+<style id="v103-fit">
+/* --- BUILD V103: MOBILE FIT + ALIGNMENT (LAST WINS) --- */
+@media (max-width: 980px), (pointer: coarse){
+  /* Use PROXIMITY snap to reduce "skip" on iOS momentum */
+  body{ scroll-snap-type: y proximity !important; }
+
+  .slide, section.slide{
+    scroll-snap-stop: always !important;
+    scroll-margin-top: calc(10px + env(safe-area-inset-top)) !important;
+  }
+
+  /* Alignment fixes */
+  .grow{ justify-content: flex-start !important; }
+  .topbar{ align-items: flex-start !important; }
+  .two, .twoEq, .team, .chartWrap, .steps{
+    align-items: stretch !important;
+  }
+
+  .slide, section.slide{
+    padding-top: calc(12px + env(safe-area-inset-top)) !important;
+    padding-bottom: calc(12px + env(safe-area-inset-bottom)) !important;
+    padding-left: calc(10px + env(safe-area-inset-left)) !important;
+    padding-right: calc(10px + env(safe-area-inset-right)) !important;
+    gap: 14px !important;
+  }
+
+  .card, .viz, .step, .kpi{
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  .viz{ height: min(280px, 38vh) !important; }
+}
+</style>
+
 </head>
 <body>
 
-<div id="tm-build-stamp">BUILD V102</div>
+<div id="tm-build-stamp">BUILD V103</div>
 
 
 <!-- === Floating Share Button (always visible) === -->
@@ -3265,7 +3301,7 @@ btn && btn.addEventListener('pointerup', (e)=>{ e.preventDefault(); e.stopPropag
 
 
 <script>
-/* === v102 HOTFIX: Share modal event delegation (fix iOS 'dead' buttons) === */
+/* === v103 HOTFIX: Share modal event delegation (fix iOS 'dead' buttons) === */
 (function(){
   function onActivate(e){
     const t = e.target;
@@ -3347,8 +3383,8 @@ btn && btn.addEventListener('pointerup', (e)=>{ e.preventDefault(); e.stopPropag
 
 
 
-<style id="v102-mobile-final">
-/* --- BUILD V102: FINAL MOBILE OVERRIDES (last wins) --- */
+<style id="v103-mobile-final">
+/* --- BUILD V103: FINAL MOBILE OVERRIDES (last wins) --- */
 @media (max-width: 900px), (pointer: coarse){
   html, body{
     height: auto !important;
@@ -3406,7 +3442,7 @@ btn && btn.addEventListener('pointerup', (e)=>{ e.preventDefault(); e.stopPropag
 </style>
 
 
-<script id="v102-mobile-guard">
+<script id="v103-mobile-guard">
 (function(){
   const mobile = window.matchMedia && window.matchMedia('(max-width: 900px), (pointer: coarse)').matches;
   if(!mobile) return;
@@ -3430,7 +3466,7 @@ btn && btn.addEventListener('pointerup', (e)=>{ e.preventDefault(); e.stopPropag
 
 
 <script>
-/* --- BUILD V102: MOBILE NAV CONTROLLER (STABLE) --- */
+/* --- BUILD V103: MOBILE NAV CONTROLLER (STABLE) --- */
 (function(){
   const mq = window.matchMedia ? window.matchMedia('(max-width: 980px), (pointer: coarse)') : {matches:false};
   const isMobile = () => !!mq.matches;
@@ -3564,7 +3600,7 @@ btn && btn.addEventListener('pointerup', (e)=>{ e.preventDefault(); e.stopPropag
 
 
 <script>
-/* --- BUILD V102: CLEAN MOBILE CONTROLLER --- */
+/* --- BUILD V103: CLEAN MOBILE CONTROLLER --- */
 (function(){
   const mq = window.matchMedia ? window.matchMedia('(max-width: 980px), (pointer: coarse)') : {matches:false};
   const isMobile = () => !!mq.matches;
@@ -3667,6 +3703,152 @@ btn && btn.addEventListener('pointerup', (e)=>{ e.preventDefault(); e.stopPropag
   window.addEventListener('resize', init, {passive:true});
   if(mq.addEventListener) mq.addEventListener('change', init);
   else if(mq.addListener) mq.addListener(init);
+})();
+</script>
+
+
+<script>
+/* --- BUILD V103: UNIFIED NAV (DESKTOP + MOBILE) --- */
+(function(){
+  const mq = window.matchMedia ? window.matchMedia('(max-width: 980px), (pointer: coarse)') : {matches:false};
+  const isMobile = () => !!mq.matches;
+
+  const deck = document.getElementById('deck') || document.querySelector('.deck');
+  const slides = Array.from(document.querySelectorAll('.slide, section.slide'));
+  if(!slides.length) return;
+
+  const prevBtn = document.getElementById('prevBtn') || document.getElementById('mPrev') ||
+                  document.querySelector('[data-nav="prev"], .navPrev, .mobilePrev, .prevBtn');
+  const nextBtn = document.getElementById('nextBtn') || document.getElementById('mNext') ||
+                  document.querySelector('[data-nav="next"], .navNext, .mobileNext, .nextBtn');
+
+  let idx = 0;
+  let navLock = false;
+
+  function closestIndex(){
+    let bestI = 0, best = Infinity;
+    for(let i=0;i<slides.length;i++){
+      const r = slides[i].getBoundingClientRect();
+      const d = Math.abs(r.top);
+      if(d < best){ best = d; bestI = i; }
+    }
+    return bestI;
+  }
+
+  function setUI(i){
+    idx = i;
+    const pnum = document.getElementById('pnum');
+    const dots = document.getElementById('dots');
+    if(pnum) pnum.textContent = `${i+1}/${slides.length}`;
+    if(dots) Array.from(dots.children).forEach((d,di)=>d.className = di===i ? 'on' : '');
+    slides.forEach((s,si)=>s.classList.toggle('active', si===i));
+  }
+
+  function desktopGo(i){
+    i = Math.max(0, Math.min(slides.length-1, i));
+    setUI(i);
+    if(deck){
+      deck.style.transform = `translateX(-${i * 100}vw)`;
+    }
+  }
+
+  function mobileGo(i){
+    i = Math.max(0, Math.min(slides.length-1, i));
+    navLock = true;
+    setUI(i);
+    const top = slides[i].offsetTop;
+    window.scrollTo({ top, behavior: 'auto' });
+    requestAnimationFrame(()=>window.scrollTo({ top, behavior: 'smooth' }));
+    clearTimeout(window.__tmNavLock);
+    window.__tmNavLock = setTimeout(()=>{ navLock = false; }, 700);
+  }
+
+  function go(i){
+    if(isMobile()) mobileGo(i);
+    else desktopGo(i);
+  }
+
+  function prev(e){
+    if(e){ e.preventDefault(); e.stopPropagation(); }
+    const cur = isMobile() ? closestIndex() : idx;
+    go(cur - 1);
+  }
+  function next(e){
+    if(e){ e.preventDefault(); e.stopPropagation(); }
+    const cur = isMobile() ? closestIndex() : idx;
+    go(cur + 1);
+  }
+
+  function bindButtons(){
+    if(prevBtn){
+      prevBtn.onclick = prev;
+      prevBtn.addEventListener('touchend', prev, {capture:true});
+    }
+    if(nextBtn){
+      nextBtn.onclick = next;
+      nextBtn.addEventListener('touchend', next, {capture:true});
+    }
+  }
+
+  function blockBackgroundAdvance(){
+    const stopper = (e)=>{
+      if(!isMobile()) return;
+      const ok = e.target.closest('button, a, .nav, .mobileNav, [data-action], [data-nav], [role="button"]');
+      if(ok) return;
+      e.stopPropagation();
+    };
+    document.addEventListener('click', stopper, true);
+    document.addEventListener('touchstart', stopper, true);
+  }
+
+  function observe(){
+    if(!('IntersectionObserver' in window)) return;
+    const obs = new IntersectionObserver((entries)=>{
+      if(!isMobile() || navLock) return;
+      let best = null;
+      for(const en of entries){
+        if(en.isIntersecting && (!best || en.intersectionRatio > best.intersectionRatio)) best = en;
+      }
+      if(best){
+        const i = slides.indexOf(best.target);
+        if(i >= 0) setUI(i);
+      }
+    }, {threshold:[0.55,0.65,0.75]});
+    slides.forEach(s=>obs.observe(s));
+  }
+
+  function applyMode(){
+    if(isMobile()){
+      document.documentElement.style.overflowY = 'auto';
+      document.body.style.overflowY = 'auto';
+      document.body.style.overflowX = 'hidden';
+      document.body.style.touchAction = 'pan-y';
+      if(deck){
+        deck.style.transform = 'none';
+        deck.style.translate = 'none';
+        deck.style.display = 'block';
+        deck.style.width = '100%';
+        deck.style.height = 'auto';
+      }
+      slides.forEach(s=>{ s.style.opacity='1'; s.style.visibility='visible'; s.style.pointerEvents='auto'; });
+      setUI(closestIndex());
+    }else{
+      desktopGo(idx);
+    }
+  }
+
+  function init(){
+    bindButtons();
+    blockBackgroundAdvance();
+    observe();
+    applyMode();
+  }
+
+  window.addEventListener('resize', applyMode, {passive:true});
+  if(mq.addEventListener) mq.addEventListener('change', applyMode);
+  else if(mq.addListener) mq.addListener(applyMode);
+
+  requestAnimationFrame(()=>requestAnimationFrame(init));
 })();
 </script>
 
