@@ -1510,7 +1510,7 @@ body { touch-action: manipulation; }
 
 </style>
 
-<style id="v107-mobile-final">
+<style id="v108-mobile-final">
 @media (max-width: 900px), (pointer: coarse){
   html, body{
     overflow-y:auto !important;
@@ -1536,8 +1536,8 @@ body { touch-action: manipulation; }
 </style>
 
 
-<style id="v107-mobile-fit">
-/* --- BUILD V107: MOBILE FIT OVERRIDES (LAST WINS) --- */
+<style id="v108-mobile-fit">
+/* --- BUILD V108: MOBILE FIT OVERRIDES (LAST WINS) --- */
 @media (max-width: 980px), (pointer: coarse){
   html, body{
     overflow-y: auto !important;
@@ -1577,8 +1577,8 @@ body { touch-action: manipulation; }
 </style>
 
 
-<style id="v107-mobile-clean">
-/* --- BUILD V107: CLEAN MOBILE ARCHITECTURE (LAST WINS) --- */
+<style id="v108-mobile-clean">
+/* --- BUILD V108: CLEAN MOBILE ARCHITECTURE (LAST WINS) --- */
 @media (max-width: 980px), (pointer: coarse){
   html, body{
     height: auto !important;
@@ -1648,8 +1648,8 @@ body { touch-action: manipulation; }
 </style>
 
 
-<style id="v107-fit">
-/* --- BUILD V107: MOBILE FIT + ALIGNMENT (LAST WINS) --- */
+<style id="v108-fit">
+/* --- BUILD V108: MOBILE FIT + ALIGNMENT (LAST WINS) --- */
 @media (max-width: 980px), (pointer: coarse){
   /* Use PROXIMITY snap to reduce "skip" on iOS momentum */
   body{ scroll-snap-type: y proximity !important; }
@@ -1684,8 +1684,8 @@ body { touch-action: manipulation; }
 </style>
 
 
-<style id="v107-mobile-scroll">
-/* --- BUILD V107: MOBILE SMOOTH SCROLL + FULL CONTENT --- */
+<style id="v108-mobile-scroll">
+/* --- BUILD V108: MOBILE SMOOTH SCROLL + FULL CONTENT --- */
 @media (max-width: 980px), (pointer: coarse){
   /* Allow user to reach bottom of content: slides should NOT be internal scrollers */
   .slide, section.slide{
@@ -1707,8 +1707,8 @@ body { touch-action: manipulation; }
 </style>
 
 
-<style id="v107-mobile-last">
-/* --- BUILD V107: MOBILE LONG-SLIDE SCROLL + FIT (LAST WINS) --- */
+<style id="v108-mobile-last">
+/* --- BUILD V108: MOBILE LONG-SLIDE SCROLL + FIT (LAST WINS) --- */
 @media (max-width: 980px), (pointer: coarse){
   body{ scroll-snap-type: none !important; } /* long slides must scroll fully */
   .deck{ transform:none !important; translate:none !important; display:block !important; width:100% !important; height:auto !important; overflow:visible !important; }
@@ -1743,8 +1743,8 @@ body { touch-action: manipulation; }
 </style>
 
 
-<style id="v107-desk-nav">
-/* --- BUILD V107: DESKTOP ARROWS --- */
+<style id="v108-desk-nav">
+/* --- BUILD V108: DESKTOP ARROWS --- */
 .deskNav{
   position: fixed;
   right: 18px;
@@ -1772,7 +1772,7 @@ body { touch-action: manipulation; }
 </style>
 
 
-<style id="v107-mobile-lock-scroll">
+<style id="v108-mobile-lock-scroll">
 @media (max-width: 980px), (pointer: coarse){
   html, body{
     height: 100% !important;
@@ -1821,7 +1821,7 @@ body { touch-action: manipulation; }
 </style>
 
 
-<style id="v107-mobile-bottom-fix">
+<style id="v108-mobile-bottom-fix">
 @media (max-width: 980px), (pointer: coarse){
   .slide, section.slide{
     overscroll-behavior: contain !important;
@@ -1837,10 +1837,28 @@ body { touch-action: manipulation; }
 }
 </style>
 
+
+<style id="v108-mobile-bottom-more">
+/* --- BUILD V108: MORE BOTTOM SCROLL ROOM (SLIDES 4 & 6) --- */
+@media (max-width: 980px), (pointer: coarse){
+  .deck .slide:nth-of-type(4),
+  .deck .slide:nth-of-type(6),
+  .deck section.slide:nth-of-type(4),
+  .deck section.slide:nth-of-type(6){
+    padding-bottom: calc(220px + env(safe-area-inset-bottom)) !important;
+    scroll-padding-bottom: calc(220px + env(safe-area-inset-bottom)) !important;
+  }
+  /* Make sure iOS uses momentum scroll inside slide */
+  .slide, section.slide{
+    -webkit-overflow-scrolling: touch !important;
+  }
+}
+</style>
+
 </head>
 <body>
 
-<div id="tm-build-stamp">BUILD V107</div>
+<div id="tm-build-stamp">BUILD V108</div>
 
 
 <!-- === Floating Share Button (always visible) === -->
@@ -3458,7 +3476,7 @@ btn && btn.addEventListener('pointerup', (e)=>{ e.preventDefault(); e.stopPropag
 
 
 <script>
-/* === v107 HOTFIX: Share modal event delegation (fix iOS 'dead' buttons) === */
+/* === v108 HOTFIX: Share modal event delegation (fix iOS 'dead' buttons) === */
 (function(){
   function onActivate(e){
     const t = e.target;
@@ -3540,8 +3558,8 @@ btn && btn.addEventListener('pointerup', (e)=>{ e.preventDefault(); e.stopPropag
 
 
 
-<style id="v107-mobile-final">
-/* --- BUILD V107: FINAL MOBILE OVERRIDES (last wins) --- */
+<style id="v108-mobile-final">
+/* --- BUILD V108: FINAL MOBILE OVERRIDES (last wins) --- */
 @media (max-width: 900px), (pointer: coarse){
   html, body{
     height: auto !important;
@@ -3599,7 +3617,7 @@ btn && btn.addEventListener('pointerup', (e)=>{ e.preventDefault(); e.stopPropag
 </style>
 
 
-<script id="v107-mobile-guard">
+<script id="v108-mobile-guard">
 (function(){
   const mobile = window.matchMedia && window.matchMedia('(max-width: 900px), (pointer: coarse)').matches;
   if(!mobile) return;
@@ -3623,7 +3641,7 @@ btn && btn.addEventListener('pointerup', (e)=>{ e.preventDefault(); e.stopPropag
 
 
 <script>
-/* --- BUILD V107: MOBILE NAV CONTROLLER (STABLE) --- */
+/* --- BUILD V108: MOBILE NAV CONTROLLER (STABLE) --- */
 (function(){
   const mq = window.matchMedia ? window.matchMedia('(max-width: 980px), (pointer: coarse)') : {matches:false};
   const isMobile = () => !!mq.matches;
@@ -3757,7 +3775,7 @@ btn && btn.addEventListener('pointerup', (e)=>{ e.preventDefault(); e.stopPropag
 
 
 <script>
-/* --- BUILD V107: CLEAN MOBILE CONTROLLER --- */
+/* --- BUILD V108: CLEAN MOBILE CONTROLLER --- */
 (function(){
   const mq = window.matchMedia ? window.matchMedia('(max-width: 980px), (pointer: coarse)') : {matches:false};
   const isMobile = () => !!mq.matches;
@@ -3865,7 +3883,7 @@ btn && btn.addEventListener('pointerup', (e)=>{ e.preventDefault(); e.stopPropag
 
 
 <script>
-/* --- BUILD V107: UNIFIED NAV (DESKTOP + MOBILE) --- */
+/* --- BUILD V108: UNIFIED NAV (DESKTOP + MOBILE) --- */
 (function(){
   const mq = window.matchMedia ? window.matchMedia('(max-width: 980px), (pointer: coarse)') : {matches:false};
   const isMobile = () => !!mq.matches;
@@ -4018,7 +4036,7 @@ btn && btn.addEventListener('pointerup', (e)=>{ e.preventDefault(); e.stopPropag
 
 
 <script>
-/* --- BUILD V107: DESKTOP ARROW HOOK --- */
+/* --- BUILD V108: DESKTOP ARROW HOOK --- */
 (function(){
   const prev = document.getElementById('prevBtn');
   const next = document.getElementById('nextBtn');
@@ -4038,7 +4056,7 @@ btn && btn.addEventListener('pointerup', (e)=>{ e.preventDefault(); e.stopPropag
 
 
 <script>
-/* --- BUILD V107: MOBILE "SCROLL UNTIL END THEN PAGE" --- */
+/* --- BUILD V108: MOBILE "SCROLL UNTIL END THEN PAGE" --- */
 (function(){
   const mq = window.matchMedia ? window.matchMedia('(max-width: 980px), (pointer: coarse)') : {matches:false};
   const isMobile = () => !!mq.matches;
@@ -4134,7 +4152,7 @@ btn && btn.addEventListener('pointerup', (e)=>{ e.preventDefault(); e.stopPropag
 
 
 <script>
-/* --- BUILD V107: MOBILE LOCKED PAGING + BOTTOM SPACERS --- */
+/* --- BUILD V108: MOBILE LOCKED PAGING + BOTTOM SPACERS --- */
 (function(){
   const mq = window.matchMedia ? window.matchMedia('(max-width: 980px), (pointer: coarse)') : {matches:false};
   const isMobile = () => !!mq.matches;
@@ -4235,6 +4253,153 @@ btn && btn.addEventListener('pointerup', (e)=>{ e.preventDefault(); e.stopPropag
     bindButtons();
     deck.addEventListener('touchstart', onTouchStart, {passive:true});
     deck.addEventListener('touchmove', onTouchMove, {passive:true});
+    deck.addEventListener('wheel', onWheel, {passive:true});
+  }
+
+  requestAnimationFrame(()=>requestAnimationFrame(init));
+})();
+</script>
+
+
+<script>
+/* --- BUILD V108: MOBILE READ-LOCK (DECK FREEZES WHILE SLIDE SCROLLS) --- */
+(function(){
+  const mq = window.matchMedia ? window.matchMedia('(max-width: 980px), (pointer: coarse)') : {matches:false};
+  const isMobile = () => !!mq.matches;
+  const deck = document.getElementById('deck') || document.querySelector('.deck');
+  const slides = Array.from(document.querySelectorAll('.slide, section.slide'));
+  if(!deck || !slides.length) return;
+
+  const prevBtn = document.getElementById('prevBtn') || document.getElementById('mPrev') ||
+                  document.querySelector('[data-nav="prev"], .navPrev, .mobilePrev, .prevBtn');
+  const nextBtn = document.getElementById('nextBtn') || document.getElementById('mNext') ||
+                  document.querySelector('[data-nav="next"], .navNext, .mobileNext, .nextBtn');
+
+  function addSpacer(slideEl, px){
+    if(!slideEl) return;
+    const existing = slideEl.querySelector('[data-bottom-spacer]');
+    if(existing){
+      existing.style.height = (px || 260) + 'px';
+      return;
+    }
+    const spacer = document.createElement('div');
+    spacer.setAttribute('data-bottom-spacer','1');
+    spacer.style.height = (px || 260) + 'px';
+    spacer.style.width = '1px';
+    spacer.style.pointerEvents = 'none';
+    spacer.style.opacity = '0';
+    slideEl.appendChild(spacer);
+  }
+
+  // Add extra room for problematic slides (4 & 6)
+  function addSpacers(){
+    addSpacer(slides[3], 320);
+    addSpacer(slides[5], 320);
+  }
+
+  function curIndex(){
+    const y = deck.scrollTop;
+    const h = deck.clientHeight || 1;
+    const probe = y + h * 0.35;
+    let best = 0;
+    for(let i=0;i<slides.length;i++){
+      if(slides[i].offsetTop <= probe) best = i;
+      else break;
+    }
+    return best;
+  }
+
+  function go(i){
+    i = Math.max(0, Math.min(slides.length-1, i));
+    slides[i].scrollIntoView({behavior:'smooth', block:'start'});
+    const pnum = document.getElementById('pnum');
+    if(pnum) pnum.textContent = `${i+1}/${slides.length}`;
+  }
+
+  function bindButtons(){
+    if(prevBtn){
+      prevBtn.onclick = (e)=>{ e.preventDefault(); e.stopPropagation(); go(curIndex()-1); };
+      prevBtn.addEventListener('touchend', (e)=>{ e.preventDefault(); e.stopPropagation(); go(curIndex()-1); }, {capture:true});
+    }
+    if(nextBtn){
+      nextBtn.onclick = (e)=>{ e.preventDefault(); e.stopPropagation(); go(curIndex()+1); };
+      nextBtn.addEventListener('touchend', (e)=>{ e.preventDefault(); e.stopPropagation(); go(curIndex()+1); }, {capture:true});
+    }
+  }
+
+  let activeSlide = null;
+  let startY = 0;
+  let deckPrevOverflow = '';
+
+  function canScroll(el){ return el && (el.scrollHeight - el.clientHeight) > 2; }
+  function atTop(el){ return el.scrollTop <= 0.5; }
+  function atBottom(el){ return (el.scrollTop + el.clientHeight) >= (el.scrollHeight - 0.5); }
+
+  function freezeDeck(){
+    if(deck.style.overflowY !== 'hidden'){
+      deckPrevOverflow = deck.style.overflowY || '';
+      deck.style.overflowY = 'hidden';
+    }
+  }
+  function unfreezeDeck(){
+    if(deck.style.overflowY === 'hidden'){
+      deck.style.overflowY = deckPrevOverflow || 'auto';
+    }
+  }
+
+  function onTouchStart(e){
+    if(!isMobile() || !e.touches) return;
+    const s = e.target.closest('.slide, section.slide');
+    if(!s) return;
+    activeSlide = s;
+    startY = e.touches[0].clientY;
+    unfreezeDeck();
+  }
+
+  function onTouchMove(e){
+    if(!isMobile() || !activeSlide || !e.touches) return;
+    if(!canScroll(activeSlide)) { unfreezeDeck(); return; }
+    const curY = e.touches[0].clientY;
+    const delta = curY - startY; // + down, - up
+    const goingDown = delta > 0;
+
+    // If slide can scroll further in that direction, freeze deck so slide scroll consumes gesture
+    if((goingDown && !atTop(activeSlide)) || (!goingDown && !atBottom(activeSlide))){
+      freezeDeck();
+    }else{
+      // At edge -> allow paging by letting deck scroll
+      unfreezeDeck();
+    }
+  }
+
+  function onTouchEnd(){
+    if(!isMobile()) return;
+    // Always restore deck scrolling after gesture ends
+    unfreezeDeck();
+    activeSlide = null;
+  }
+
+  function onWheel(e){
+    if(!isMobile()) return;
+    const s = e.target.closest('.slide, section.slide');
+    if(!s || !canScroll(s)) { unfreezeDeck(); return; }
+    const goingDown = e.deltaY > 0;
+    if((goingDown && !atBottom(s)) || (!goingDown && !atTop(s))){
+      freezeDeck();
+    }else{
+      unfreezeDeck();
+    }
+  }
+
+  function init(){
+    if(!isMobile()) return;
+    addSpacers();
+    bindButtons();
+
+    deck.addEventListener('touchstart', onTouchStart, {passive:true});
+    deck.addEventListener('touchmove', onTouchMove, {passive:true});
+    deck.addEventListener('touchend', onTouchEnd, {passive:true});
+    deck.addEventListener('touchcancel', onTouchEnd, {passive:true});
     deck.addEventListener('wheel', onWheel, {passive:true});
   }
 
