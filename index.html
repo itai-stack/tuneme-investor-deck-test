@@ -1364,6 +1364,60 @@ a:hover{
   display: block;
 }
 
+
+/* --- v95 MOBILE UNLOCK PATCH --- */
+@media (max-width: 980px), (hover: none) and (pointer: coarse) {
+  html, body {
+    height: 100%;
+    min-height: 100%;
+    overflow: auto !important;
+    overscroll-behavior: contain;
+    -webkit-text-size-adjust: 100%;
+    touch-action: pan-y !important;
+  }
+  /* Common deck wrappers */
+  .deck, .slides, .slides-wrap, .viewport, .app, .root {
+    height: auto !important;
+    min-height: 100%;
+    overflow: visible !important;
+    touch-action: pan-y !important;
+  }
+  /* If a horizontal carousel exists, disable it on mobile */
+  .slides, .slides-track, .track, .carousel, .pages, .page-track {
+    transform: none !important;
+    translate: none !important;
+    will-change: auto !important;
+  }
+  /* Stack slides vertically and allow scrolling per slide */
+  .slides, .slides-track, .track, .carousel, .pages, .page-track {
+    display: block !important;
+  }
+  section.slide, .slide {
+    width: 100% !important;
+    max-width: 100% !important;
+    height: 100dvh !important;
+    min-height: 100dvh !important;
+    overflow: auto !important;
+    -webkit-overflow-scrolling: touch;
+    scroll-snap-align: start;
+    opacity: 1 !important;
+    visibility: visible !important;
+    pointer-events: auto !important;
+  }
+  /* Enable snap scrolling if wrapper supports it */
+  body {
+    scroll-snap-type: y mandatory;
+  }
+  /* Prevent “locked screen” overlays from intercepting taps */
+  .overlay, .click-catcher, .tap-layer, .nav-capture {
+    pointer-events: none !important;
+  }
+  /* Keep nav buttons clickable */
+  .nav, .nav * , .mobile-nav, .mobile-nav * {
+    pointer-events: auto !important;
+  }
+}
+
 </style>
 
 <style>
@@ -1512,7 +1566,7 @@ body { touch-action: manipulation; }
 </head>
 <body>
 
-<div id="tm-build-stamp">BUILD V93</div>
+<div id="tm-build-stamp">BUILD V95</div>
 
 
 <!-- === Floating Share Button (always visible) === -->
@@ -2582,7 +2636,7 @@ function bind(el, dir){
     e.preventDefault();
   }
 
-  document.addEventListener('touchmove', lockMove, { passive:false });
+  
 
   // prevent pinch-zoom gesture from breaking layout
   document.addEventListener('gesturestart', (e)=>{ if(mq.matches){ e.preventDefault(); } }, { passive:false });
@@ -3144,7 +3198,7 @@ btn && btn.addEventListener('pointerup', (e)=>{ e.preventDefault(); e.stopPropag
 
 
 <script>
-/* === v93 HOTFIX: Share modal event delegation (fix iOS 'dead' buttons) === */
+/* === v95 HOTFIX: Share modal event delegation (fix iOS 'dead' buttons) === */
 (function(){
   function onActivate(e){
     const t = e.target;
@@ -3219,6 +3273,39 @@ btn && btn.addEventListener('pointerup', (e)=>{ e.preventDefault(); e.stopPropag
       modal.setAttribute('aria-hidden','true');
     }
   }, {capture:true});
+})();
+</script>
+
+
+<script>
+/* --- v95 MOBILE UNLOCK RUNTIME GUARD --- */
+(function(){
+  const isCoarse = window.matchMedia && window.matchMedia("(hover: none) and (pointer: coarse)").matches;
+  const isNarrow = window.matchMedia && window.matchMedia("(max-width: 980px)").matches;
+  if(!(isCoarse || isNarrow)) return;
+
+  // Ensure body scroll works
+  document.documentElement.style.overflow = "auto";
+  document.body.style.overflow = "auto";
+  document.body.style.touchAction = "pan-y";
+
+  // Neutralize any click-to-advance on the document (keep nav buttons working)
+  const blocker = (e) => {
+    // allow clicks on explicit controls only
+    const ok = e.target.closest("button, a, .nav, .mobile-nav, [data-nav], [data-action], [role='button']");
+    if(ok) return;
+    // Don't let global handlers treat this as navigation
+    e.stopPropagation();
+  };
+  document.addEventListener("click", blocker, true);
+  document.addEventListener("touchstart", blocker, true);
+
+  // Make all slides visible (avoid iOS repaint/opacity gating)
+  document.querySelectorAll(".slide, section.slide").forEach(s => {
+    s.style.opacity = "1";
+    s.style.visibility = "visible";
+    s.style.pointerEvents = "auto";
+  });
 })();
 </script>
 
