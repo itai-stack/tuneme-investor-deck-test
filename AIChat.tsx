@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { GoogleGenAI } from "@google/genai";
 import { ChatMessage } from './types.ts';
@@ -28,17 +27,20 @@ const AIChat: React.FC<AIChatProps> = ({ onClose }) => {
     setLoading(true);
 
     try {
-      // In browser, handle API key gracefully
-      const apiKey = process.env.API_KEY;
+      // Safely access process.env to avoid crashes on non-Node environments
+      const apiKey = typeof process !== 'undefined' && process.env ? process.env.API_KEY : undefined;
+      
       if (!apiKey) {
-        throw new Error("API Key not found");
+        setMessages(prev => [...prev, { role: 'model', text: "Configuration error: API key is missing. Please ensure your environment is set up correctly." }]);
+        setLoading(false);
+        return;
       }
 
       const ai = new GoogleGenAI({ apiKey });
       const context = slides.map(s => `Slide ${s.id} (${s.kicker}): ${s.title}. ${s.subtitle}`).join('\n');
       const response = await ai.models.generateContent({
         model: 'gemini-3-flash-preview',
-        contents: `You are TuneMe AI, a professional investor relations assistant. 
+        contents: `You are TuneMe AI, a professional investor relations assistant for a health-tech startup. 
         Context from our pitch deck:
         ${context}
         
@@ -47,7 +49,8 @@ const AIChat: React.FC<AIChatProps> = ({ onClose }) => {
       });
       setMessages(prev => [...prev, { role: 'model', text: response.text || "I couldn't generate a response." }]);
     } catch (e) {
-      setMessages(prev => [...prev, { role: 'model', text: "Service error. Please try again later." }]);
+      console.error("AI Chat Error:", e);
+      setMessages(prev => [...prev, { role: 'model', text: "Service error. Please try again later or contact support." }]);
     } finally {
       setLoading(false);
     }

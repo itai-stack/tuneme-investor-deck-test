@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import BackgroundDecor from './BackgroundDecor.tsx';
 import SlideContent from './SlideContent.tsx';

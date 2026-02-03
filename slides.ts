@@ -1,6 +1,5 @@
-
 import React from 'react';
-import { SlideData } from './types';
+import { SlideData } from './types.ts';
 
 export const slides: SlideData[] = [
   {
