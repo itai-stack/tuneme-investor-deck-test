@@ -1510,7 +1510,7 @@ body { touch-action: manipulation; }
 
 </style>
 
-<style id="v101-mobile-final">
+<style id="v102-mobile-final">
 @media (max-width: 900px), (pointer: coarse){
   html, body{
     overflow-y:auto !important;
@@ -1536,8 +1536,8 @@ body { touch-action: manipulation; }
 </style>
 
 
-<style id="v101-mobile-fit">
-/* --- BUILD V101: MOBILE FIT OVERRIDES (LAST WINS) --- */
+<style id="v102-mobile-fit">
+/* --- BUILD V102: MOBILE FIT OVERRIDES (LAST WINS) --- */
 @media (max-width: 980px), (pointer: coarse){
   html, body{
     overflow-y: auto !important;
@@ -1576,10 +1576,81 @@ body { touch-action: manipulation; }
 }
 </style>
 
+
+<style id="v102-mobile-clean">
+/* --- BUILD V102: CLEAN MOBILE ARCHITECTURE (LAST WINS) --- */
+@media (max-width: 980px), (pointer: coarse){
+  html, body{
+    height: auto !important;
+    min-height: 100% !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    -webkit-overflow-scrolling: touch !important;
+    touch-action: pan-y !important;
+  }
+
+  /* Disable any horizontal deck transform/carousel behavior */
+  #deck, .deck, .slides, .slides-track, .track{
+    transform: none !important;
+    translate: none !important;
+    width: 100% !important;
+    height: auto !important;
+    display: block !important;
+    overflow: visible !important;
+    will-change: auto !important;
+  }
+
+  /* Slides become vertical sections */
+  .slide, section.slide{
+    width: 100% !important;             /* avoid iOS 100vw overflow */
+    max-width: 100% !important;
+    min-height: 100dvh !important;      /* correct iOS viewport */
+    height: auto !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    -webkit-overflow-scrolling: touch !important;
+    scroll-snap-align: start !important;
+    padding-top: calc(14px + env(safe-area-inset-top)) !important;
+    padding-bottom: calc(14px + env(safe-area-inset-bottom)) !important;
+    padding-left: calc(12px + env(safe-area-inset-left)) !important;
+    padding-right: calc(12px + env(safe-area-inset-right)) !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    pointer-events: auto !important;
+  }
+
+  body{ scroll-snap-type: y mandatory !important; }
+
+  /* Keep media inside viewport */
+  img, video, canvas, svg{ max-width: 100% !important; height: auto !important; }
+
+  /* Typography fit */
+  h1{ font-size: clamp(30px, 7.2vw, 46px) !important; line-height: 1.06 !important; }
+  h2{ font-size: clamp(24px, 6.0vw, 40px) !important; line-height: 1.08 !important; }
+  h3{ font-size: clamp(18px, 4.8vw, 24px) !important; }
+  p, li{ font-size: clamp(14px, 3.9vw, 18px) !important; line-height: 1.45 !important; }
+
+  /* Force multi-column layouts to stack */
+  .two, .twoEq, .team, .chartWrap, .steps{
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 18px !important;
+  }
+  .kpis{ grid-template-columns: 1fr 1fr !important; gap: 10px !important; }
+
+  /* Prevent hidden-by-animation “blank slide” on mobile */
+  .reveal, [data-reveal], .fade, .anim, .enter{
+    opacity: 1 !important;
+    transform: none !important;
+    filter: none !important;
+  }
+}
+</style>
+
 </head>
 <body>
 
-<div id="tm-build-stamp">BUILD V101</div>
+<div id="tm-build-stamp">BUILD V102</div>
 
 
 <!-- === Floating Share Button (always visible) === -->
@@ -3194,7 +3265,7 @@ btn && btn.addEventListener('pointerup', (e)=>{ e.preventDefault(); e.stopPropag
 
 
 <script>
-/* === v101 HOTFIX: Share modal event delegation (fix iOS 'dead' buttons) === */
+/* === v102 HOTFIX: Share modal event delegation (fix iOS 'dead' buttons) === */
 (function(){
   function onActivate(e){
     const t = e.target;
@@ -3276,8 +3347,8 @@ btn && btn.addEventListener('pointerup', (e)=>{ e.preventDefault(); e.stopPropag
 
 
 
-<style id="v101-mobile-final">
-/* --- BUILD V101: FINAL MOBILE OVERRIDES (last wins) --- */
+<style id="v102-mobile-final">
+/* --- BUILD V102: FINAL MOBILE OVERRIDES (last wins) --- */
 @media (max-width: 900px), (pointer: coarse){
   html, body{
     height: auto !important;
@@ -3335,7 +3406,7 @@ btn && btn.addEventListener('pointerup', (e)=>{ e.preventDefault(); e.stopPropag
 </style>
 
 
-<script id="v101-mobile-guard">
+<script id="v102-mobile-guard">
 (function(){
   const mobile = window.matchMedia && window.matchMedia('(max-width: 900px), (pointer: coarse)').matches;
   if(!mobile) return;
@@ -3359,7 +3430,7 @@ btn && btn.addEventListener('pointerup', (e)=>{ e.preventDefault(); e.stopPropag
 
 
 <script>
-/* --- BUILD V101: MOBILE NAV CONTROLLER (STABLE) --- */
+/* --- BUILD V102: MOBILE NAV CONTROLLER (STABLE) --- */
 (function(){
   const mq = window.matchMedia ? window.matchMedia('(max-width: 980px), (pointer: coarse)') : {matches:false};
   const isMobile = () => !!mq.matches;
@@ -3488,6 +3559,114 @@ btn && btn.addEventListener('pointerup', (e)=>{ e.preventDefault(); e.stopPropag
 
   // Run after first paint
   window.requestAnimationFrame(()=>window.requestAnimationFrame(init));
+})();
+</script>
+
+
+<script>
+/* --- BUILD V102: CLEAN MOBILE CONTROLLER --- */
+(function(){
+  const mq = window.matchMedia ? window.matchMedia('(max-width: 980px), (pointer: coarse)') : {matches:false};
+  const isMobile = () => !!mq.matches;
+
+  const slides = Array.from(document.querySelectorAll('.slide, section.slide'));
+  if(!slides.length) return;
+
+  function closestIndex(){
+    let bestI = 0, best = Infinity;
+    for(let i=0;i<slides.length;i++){
+      const r = slides[i].getBoundingClientRect();
+      const d = Math.abs(r.top);
+      if(d < best){ best = d; bestI = i; }
+    }
+    return bestI;
+  }
+
+  function scrollTo(i){
+    i = Math.max(0, Math.min(slides.length-1, i));
+    slides[i].scrollIntoView({behavior:'smooth', block:'start'});
+  }
+
+  function stripAndRebindButtons(){
+    // Find likely prev/next controls
+    const prevCandidates = [
+      '#prevBtn','#mPrev','[data-nav="prev"]','.navPrev','.mobilePrev','.prevBtn'
+    ];
+    const nextCandidates = [
+      '#nextBtn','#mNext','[data-nav="next"]','.navNext','.mobileNext','.nextBtn'
+    ];
+
+    function pick(selList){
+      for(const sel of selList){
+        const el = document.querySelector(sel);
+        if(el) return el;
+      }
+      return null;
+    }
+
+    const prev = pick(prevCandidates);
+    const next = pick(nextCandidates);
+
+    function replaceNode(el){
+      if(!el) return null;
+      const clone = el.cloneNode(true); // removes all prior listeners
+      el.parentNode.replaceChild(clone, el);
+      return clone;
+    }
+
+    const prevClean = replaceNode(prev);
+    const nextClean = replaceNode(next);
+
+    const onPrev = (e)=>{ e.preventDefault(); e.stopPropagation(); scrollTo(closestIndex()-1); };
+    const onNext = (e)=>{ e.preventDefault(); e.stopPropagation(); scrollTo(closestIndex()+1); };
+
+    [prevClean].filter(Boolean).forEach(b=>{
+      b.addEventListener('click', onPrev, {capture:true});
+      b.addEventListener('touchend', onPrev, {capture:true});
+    });
+    [nextClean].filter(Boolean).forEach(b=>{
+      b.addEventListener('click', onNext, {capture:true});
+      b.addEventListener('touchend', onNext, {capture:true});
+    });
+  }
+
+  function disableTapToAdvance(){
+    // If the deck has "click anywhere to advance", it breaks iOS. Stop it.
+    const stopper = (e)=>{
+      if(!isMobile()) return;
+      const ok = e.target.closest('button, a, .nav, .mobileNav, [data-action], [data-nav], [role="button"]');
+      if(ok) return;
+      e.stopPropagation();
+    };
+    document.addEventListener('click', stopper, true);
+    document.addEventListener('touchstart', stopper, true);
+  }
+
+  function forceMobileLayout(){
+    if(!isMobile()) return;
+    document.documentElement.style.overflowY = 'auto';
+    document.body.style.overflowY = 'auto';
+    document.body.style.overflowX = 'hidden';
+    document.body.style.touchAction = 'pan-y';
+    // Ensure visibility
+    slides.forEach(s=>{
+      s.style.opacity = '1';
+      s.style.visibility = 'visible';
+      s.style.pointerEvents = 'auto';
+    });
+  }
+
+  function init(){
+    forceMobileLayout();
+    stripAndRebindButtons();
+    disableTapToAdvance();
+  }
+
+  // Run after paint
+  requestAnimationFrame(()=>requestAnimationFrame(init));
+  window.addEventListener('resize', init, {passive:true});
+  if(mq.addEventListener) mq.addEventListener('change', init);
+  else if(mq.addListener) mq.addListener(init);
 })();
 </script>
 
