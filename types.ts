@@ -1,5 +1,4 @@
 
-// Added import for React to support React.ReactNode
 import React from 'react';
 
 export interface KPI {
