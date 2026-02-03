@@ -1230,7 +1230,7 @@ a:hover{
 @media (max-width: 600px), (pointer: coarse) {
   html, body{
     height:100%;
-    overflow:hidden;          /* no scroll */
+    overflow:auto;          /* no scroll */
     overscroll-behavior:none; /* reduce rubber-banding */
   }
   body{
@@ -1509,10 +1509,36 @@ body { touch-action: manipulation; }
 }
 
 </style>
+
+<style id="v100-mobile-final">
+@media (max-width: 900px), (pointer: coarse){
+  html, body{
+    overflow-y:auto !important;
+    overflow-x:hidden !important;
+    height:auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    touch-action: pan-y !important;
+  }
+  body{ scroll-snap-type: y mandatory; }
+  #deck, .deck{ transform:none !important; display:block !important; width:100% !important; height:auto !important; overflow:visible !important; }
+  .slide, section.slide{
+    width:100% !important; max-width:100% !important;
+    min-height:100dvh !important; height:auto !important;
+    overflow-y:auto !important; overflow-x:hidden !important;
+    -webkit-overflow-scrolling: touch !important;
+    scroll-snap-align:start;
+    padding-top: calc(18px + env(safe-area-inset-top)) !important;
+    padding-bottom: calc(18px + env(safe-area-inset-bottom)) !important;
+  }
+  /* reveal gating off */
+  .reveal{ opacity:1 !important; transform:none !important; }
+}
+</style>
+
 </head>
 <body>
 
-<div id="tm-build-stamp">BUILD V97</div>
+<div id="tm-build-stamp">BUILD V100</div>
 
 
 <!-- === Floating Share Button (always visible) === -->
@@ -2315,6 +2341,8 @@ slides.forEach((s) => {
  function applyFitScale(){
   if(isStacked && isStacked()) return;
 
+  if(isStacked && isStacked()) return;
+
    // Only on desktop-like pointers; avoid on touch where layout differs
    if (window.matchMedia && window.matchMedia('(pointer:fine)').matches === false) return;
    // reset any previous scaling
@@ -2339,15 +2367,43 @@ slides.forEach((s) => {
  }
 
 function update(){
-  deck.style.transform = `translateX(-${idx * 100}vw)`;
+  const stacked = (typeof isStacked === 'function') && isStacked();
+
   pnum.textContent = `${idx+1}/${slides.length}`;
- Array.from(dots.children).forEach((d,i)=>d.className = i===idx ? 'on' : '');
- slides.forEach((s,i)=>s.classList.toggle('active', i===idx));
- applyFitScale();
- // announce
- toast.classList.add('on');
- clearTimeout(window.__t);
- window.__t = setTimeout(()=>toast.classList.remove('on'), 1100);
+  Array.from(dots.children).forEach((d,i)=>d.className = i===idx ? 'on' : '');
+  slides.forEach((s,i)=>s.classList.toggle('active', i===idx));
+
+  if(stacked){
+    // Mobile: vertical native scroll. No transforms.
+    deck.style.transform = 'none';
+    deck.style.display = 'block';
+    deck.style.width = '100%';
+    deck.style.height = 'auto';
+
+    // Ensure content is visible (avoid iOS repaint gating)
+    document.body.style.overflowY = 'auto';
+    document.documentElement.style.overflowY = 'auto';
+    document.body.style.touchAction = 'pan-y';
+
+    slides.forEach((s)=>{
+      s.style.opacity = '1';
+      s.style.visibility = 'visible';
+      s.style.pointerEvents = 'auto';
+    });
+
+    const target = slides[idx];
+    if(target && target.scrollIntoView){
+      target.scrollIntoView({behavior:'smooth', block:'start'});
+    }
+    return;
+  }
+
+  deck.style.transform = `translateX(-${idx * 100}vw)`;
+  applyFitScale();
+
+  toast.classList.add('on');
+  clearTimeout(window.__t);
+  window.__t = setTimeout(()=>toast.classList.remove('on'), 1100);
  }
 
  function toggleFullscreen(){
@@ -2540,56 +2596,7 @@ function bind(el, dir){
 
 
 
-<script>
-/* === iOS: lock panning to prevent accidental left/right movement === */
-(function(){
-  const mq = window.matchMedia('(max-width: 600px), (pointer: coarse)');
-  let sx = 0, sy = 0;
 
-  document.addEventListener('touchstart', (e)=>{
-    if(!mq.matches) return;
-    const t = e.touches && e.touches[0];
-    if(!t) return;
-    sx = t.clientX; sy = t.clientY;
-  }, { passive:true });
-
-  function isScrollableSlideTarget(target){
-    const slide = target && target.closest ? target.closest('.slide') : null;
-    if(!slide) return null;
-    return (slide.scrollHeight > slide.clientHeight + 2) ? slide : null;
-  }
-
-  function lockMove(e){
-    if(!mq.matches) return;
-
-    const target = e.target;
-    const carousel = target && (target.closest && target.closest('.kpis'));
-
-    const t = e.touches && e.touches[0];
-    if(!t){ e.preventDefault(); return; }
-
-    const dx = t.clientX - sx;
-    const dy = t.clientY - sy;
-
-    // Allow horizontal swipes ONLY inside carousel sections (e.g., KPI row)
-    if(carousel){
-      // If gesture is mostly horizontal, allow native scroll within the carousel
-      if(Math.abs(dx) > Math.abs(dy)) return;
-      // Otherwise block vertical drift (keeps the slide locked)
-      e.preventDefault();
-      return;
-    }
-
-    // Everywhere else: fully locked to avoid accidental scroll/jank
-    e.preventDefault();
-  }
-
-  
-
-  // prevent pinch-zoom gesture from breaking layout
-  } }, { passive:false });
-})();
-</script>
 
 <!-- === Share /  (mobile helper) === -->
 <div id="tm-share-modal" style="
@@ -3146,7 +3153,7 @@ btn && btn.addEventListener('pointerup', (e)=>{ e.preventDefault(); e.stopPropag
 
 
 <script>
-/* === v97 HOTFIX: Share modal event delegation (fix iOS 'dead' buttons) === */
+/* === v100 HOTFIX: Share modal event delegation (fix iOS 'dead' buttons) === */
 (function(){
   function onActivate(e){
     const t = e.target;
@@ -3226,7 +3233,7 @@ btn && btn.addEventListener('pointerup', (e)=>{ e.preventDefault(); e.stopPropag
 
 
 <script>
-/* --- BUILD V97: MOBILE FIX (SCROLL + FULL VISIBILITY) --- */
+/* --- BUILD V100: MOBILE FIX (SCROLL + FULL VISIBILITY) --- */
 (function(){
   const isMobile = window.matchMedia && window.matchMedia('(max-width: 900px), (pointer: coarse)').matches;
   if(!isMobile) return;
@@ -3279,8 +3286,8 @@ btn && btn.addEventListener('pointerup', (e)=>{ e.preventDefault(); e.stopPropag
 </script>
 
 
-<style id="v97-mobile-final">
-/* --- BUILD V97: FINAL MOBILE OVERRIDES (last wins) --- */
+<style id="v100-mobile-final">
+/* --- BUILD V100: FINAL MOBILE OVERRIDES (last wins) --- */
 @media (max-width: 900px), (pointer: coarse){
   html, body{
     height: auto !important;
@@ -3336,6 +3343,29 @@ btn && btn.addEventListener('pointerup', (e)=>{ e.preventDefault(); e.stopPropag
   .mobileNav, .nav{ z-index: 9999 !important; }
 }
 </style>
+
+
+<script id="v100-mobile-guard">
+(function(){
+  const mobile = window.matchMedia && window.matchMedia('(max-width: 900px), (pointer: coarse)').matches;
+  if(!mobile) return;
+
+  // Force scroll and undo any previous locks
+  document.documentElement.style.overflowY = 'auto';
+  document.body.style.overflowY = 'auto';
+  document.body.style.overflowX = 'hidden';
+  document.body.style.touchAction = 'pan-y';
+
+  // Remove accidental global click-to-advance on mobile (keep controls)
+  const stop = (e)=>{
+    const ok = e.target.closest && e.target.closest('button, a, .nav, .mobileNav, [data-action], [data-nav], [role="button"]');
+    if(ok) return;
+    e.stopPropagation();
+  };
+  document.addEventListener('click', stop, true);
+  document.addEventListener('touchstart', stop, true);
+})();
+</script>
 
 </body>
 </html>
