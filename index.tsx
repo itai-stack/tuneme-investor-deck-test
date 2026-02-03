@@ -3,21 +3,16 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App.tsx';
 
-console.log("TuneMe Deck: Initializing...");
+console.log("TuneMe Deck: Mounting application...");
 
 const rootElement = document.getElementById('root');
-if (!rootElement) {
-  console.error("TuneMe Deck Error: Root element '#root' not found in index.html");
+if (rootElement) {
+  const root = ReactDOM.createRoot(rootElement);
+  root.render(
+    <React.StrictMode>
+      <App />
+    </React.StrictMode>
+  );
 } else {
-  try {
-    const root = ReactDOM.createRoot(rootElement);
-    root.render(
-      <React.StrictMode>
-        <App />
-      </React.StrictMode>
-    );
-    console.log("TuneMe Deck: Rendered successfully.");
-  } catch (err) {
-    console.error("TuneMe Deck: Failed to render app:", err);
-  }
+  console.error("TuneMe Deck Error: Could not find root element.");
 }

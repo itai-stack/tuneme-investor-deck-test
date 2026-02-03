@@ -15,7 +15,6 @@ const SlideContent: React.FC<SlideContentProps> = ({ slide, isActive, isMobile }
 
   return (
     <div className={`flex-1 flex flex-col transition-all duration-1000 delay-100 ${visibilityClass}`}>
-      {/* Header */}
       <div className="flex items-center justify-between mb-6 lg:mb-12 flex-shrink-0">
         <div className="flex items-center gap-2 lg:gap-3 text-[10px] lg:text-xs font-black tracking-[0.25em] uppercase text-white/50">
           <div className="w-1.5 h-1.5 lg:w-2 lg:h-2 rounded-full bg-teal-400 shadow-[0_0_15px_rgba(45,212,191,0.6)]" />
@@ -26,7 +25,6 @@ const SlideContent: React.FC<SlideContentProps> = ({ slide, isActive, isMobile }
         </div>
       </div>
 
-      {/* Main Content */}
       <div className="flex-1 flex flex-col justify-center min-h-0">
         <div className="max-w-6xl w-full">
           <h1 className="text-3xl lg:text-8xl font-black leading-[1.05] tracking-tight mb-4 lg:mb-10 drop-shadow-2xl">

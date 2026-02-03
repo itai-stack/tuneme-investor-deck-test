@@ -28,7 +28,13 @@ const AIChat: React.FC<AIChatProps> = ({ onClose }) => {
     setLoading(true);
 
     try {
-      const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+      // In browser, handle API key gracefully
+      const apiKey = process.env.API_KEY;
+      if (!apiKey) {
+        throw new Error("API Key not found");
+      }
+
+      const ai = new GoogleGenAI({ apiKey });
       const context = slides.map(s => `Slide ${s.id} (${s.kicker}): ${s.title}. ${s.subtitle}`).join('\n');
       const response = await ai.models.generateContent({
         model: 'gemini-3-flash-preview',
@@ -41,7 +47,7 @@ const AIChat: React.FC<AIChatProps> = ({ onClose }) => {
       });
       setMessages(prev => [...prev, { role: 'model', text: response.text || "I couldn't generate a response." }]);
     } catch (e) {
-      setMessages(prev => [...prev, { role: 'model', text: "Connection error. Please check your API key." }]);
+      setMessages(prev => [...prev, { role: 'model', text: "Service error. Please try again later." }]);
     } finally {
       setLoading(false);
     }
@@ -49,8 +55,8 @@ const AIChat: React.FC<AIChatProps> = ({ onClose }) => {
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/90 custom-blur transition-all duration-300">
-      <div className="w-full max-w-2xl bg-slate-900 border border-white/10 rounded-[40px] overflow-hidden flex flex-col h-[75vh] shadow-2xl animate-float">
-        <div className="p-8 border-b border-white/10 flex items-center justify-between bg-white/[0.02]">
+      <div className="w-full max-w-2xl bg-slate-900 border border-white/10 rounded-[40px] overflow-hidden flex flex-col h-[75vh] shadow-2xl">
+        <div className="p-8 border-b border-white/10 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-3 h-3 rounded-full bg-teal-400" />
             <h3 className="font-bold tracking-tight text-lg">TuneMe AI Assistant</h3>
@@ -62,14 +68,14 @@ const AIChat: React.FC<AIChatProps> = ({ onClose }) => {
         <div ref={scrollRef} className="flex-1 overflow-y-auto p-8 space-y-6 hide-scrollbar">
           {messages.map((msg, i) => (
             <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-              <div className={`max-w-[85%] p-5 rounded-3xl text-sm leading-relaxed ${msg.role === 'user' ? 'bg-teal-500/20 border border-teal-500/20 text-teal-50' : 'bg-white/5 border border-white/10 text-white/90'}`}>
+              <div className={`max-w-[85%] p-5 rounded-3xl text-sm leading-relaxed ${msg.role === 'user' ? 'bg-teal-500/20 text-teal-50' : 'bg-white/5 text-white/90'}`}>
                 {msg.text}
               </div>
             </div>
           ))}
           {loading && <div className="text-white/30 text-xs animate-pulse">Assistant is thinking...</div>}
         </div>
-        <div className="p-8 border-t border-white/10 bg-white/[0.01]">
+        <div className="p-8 border-t border-white/10">
           <div className="relative">
             <input 
               type="text" 
