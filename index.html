@@ -1510,7 +1510,7 @@ body { touch-action: manipulation; }
 
 </style>
 
-<style id="v104-mobile-final">
+<style id="v105-mobile-final">
 @media (max-width: 900px), (pointer: coarse){
   html, body{
     overflow-y:auto !important;
@@ -1536,8 +1536,8 @@ body { touch-action: manipulation; }
 </style>
 
 
-<style id="v104-mobile-fit">
-/* --- BUILD V104: MOBILE FIT OVERRIDES (LAST WINS) --- */
+<style id="v105-mobile-fit">
+/* --- BUILD V105: MOBILE FIT OVERRIDES (LAST WINS) --- */
 @media (max-width: 980px), (pointer: coarse){
   html, body{
     overflow-y: auto !important;
@@ -1577,8 +1577,8 @@ body { touch-action: manipulation; }
 </style>
 
 
-<style id="v104-mobile-clean">
-/* --- BUILD V104: CLEAN MOBILE ARCHITECTURE (LAST WINS) --- */
+<style id="v105-mobile-clean">
+/* --- BUILD V105: CLEAN MOBILE ARCHITECTURE (LAST WINS) --- */
 @media (max-width: 980px), (pointer: coarse){
   html, body{
     height: auto !important;
@@ -1648,8 +1648,8 @@ body { touch-action: manipulation; }
 </style>
 
 
-<style id="v104-fit">
-/* --- BUILD V104: MOBILE FIT + ALIGNMENT (LAST WINS) --- */
+<style id="v105-fit">
+/* --- BUILD V105: MOBILE FIT + ALIGNMENT (LAST WINS) --- */
 @media (max-width: 980px), (pointer: coarse){
   /* Use PROXIMITY snap to reduce "skip" on iOS momentum */
   body{ scroll-snap-type: y proximity !important; }
@@ -1684,8 +1684,8 @@ body { touch-action: manipulation; }
 </style>
 
 
-<style id="v104-mobile-scroll">
-/* --- BUILD V104: MOBILE SMOOTH SCROLL + FULL CONTENT --- */
+<style id="v105-mobile-scroll">
+/* --- BUILD V105: MOBILE SMOOTH SCROLL + FULL CONTENT --- */
 @media (max-width: 980px), (pointer: coarse){
   /* Allow user to reach bottom of content: slides should NOT be internal scrollers */
   .slide, section.slide{
@@ -1706,10 +1706,75 @@ body { touch-action: manipulation; }
 }
 </style>
 
+
+<style id="v105-mobile-last">
+/* --- BUILD V105: MOBILE LONG-SLIDE SCROLL + FIT (LAST WINS) --- */
+@media (max-width: 980px), (pointer: coarse){
+  body{ scroll-snap-type: none !important; } /* long slides must scroll fully */
+  .deck{ transform:none !important; translate:none !important; display:block !important; width:100% !important; height:auto !important; overflow:visible !important; }
+  .slide, section.slide{
+    width: 100% !important;
+    max-width: 100% !important;
+    height: auto !important;
+    min-height: 100dvh !important;
+    overflow: visible !important; /* allow full content */
+    padding-top: calc(12px + env(safe-area-inset-top)) !important;
+    padding-bottom: calc(14px + env(safe-area-inset-bottom)) !important;
+    padding-left: calc(10px + env(safe-area-inset-left)) !important;
+    padding-right: calc(10px + env(safe-area-inset-right)) !important;
+    gap: 14px !important;
+  }
+  /* Prevent "blank" due to reveal gating */
+  .reveal{ opacity: 1 !important; transform: none !important; filter:none !important; }
+  img, video, canvas, svg{ max-width: 100% !important; height: auto !important; }
+  .viz{ height: min(280px, 38vh) !important; }
+  /* Typography */
+  h1{ font-size: clamp(28px, 7.0vw, 44px) !important; line-height: 1.06 !important; }
+  h2{ font-size: clamp(22px, 5.8vw, 38px) !important; line-height: 1.08 !important; }
+  p, li{ font-size: clamp(14px, 3.9vw, 18px) !important; }
+  /* Layout stacking */
+  .two, .twoEq, .team, .chartWrap, .steps{ display:flex !important; flex-direction:column !important; gap: 16px !important; align-items: stretch !important; }
+  .kpis{ grid-template-columns: 1fr 1fr !important; gap: 10px !important; }
+  /* Logo smaller on mobile */
+  .logoPill{ padding: 8px 10px !important; border-radius: 14px !important; }
+  .logoPill img{ height: 22px !important; }
+  .logoPill span{ font-size: 12px !important; letter-spacing: .8px !important; }
+}
+</style>
+
+
+<style id="v105-desk-nav">
+/* --- BUILD V105: DESKTOP ARROWS --- */
+.deskNav{
+  position: fixed;
+  right: 18px;
+  bottom: 18px;
+  display: flex;
+  gap: 10px;
+  z-index: 9999;
+}
+.deskNav button{
+  appearance: none;
+  border: 1px solid rgba(255,255,255,.16);
+  background: rgba(0,0,0,.35);
+  color: #fff;
+  width: 44px;
+  height: 44px;
+  border-radius: 999px;
+  font-size: 22px;
+  font-weight: 900;
+  cursor: pointer;
+  backdrop-filter: blur(8px);
+}
+@media (max-width: 980px), (pointer: coarse){
+  .deskNav{ display:none !important; }
+}
+</style>
+
 </head>
 <body>
 
-<div id="tm-build-stamp">BUILD V104</div>
+<div id="tm-build-stamp">BUILD V105</div>
 
 
 <!-- === Floating Share Button (always visible) === -->
@@ -2563,8 +2628,11 @@ function update(){
     });
 
     const target = slides[idx];
-    if(target && target.scrollIntoView){
-      target.scrollIntoView({behavior:'smooth', block:'start'});
+    if(target){
+      const top = target.offsetTop - 1;
+      // iOS: scrollIntoView can skip short slides; offsetTop is stable
+      window.scrollTo({ top, behavior: 'auto' });
+      requestAnimationFrame(()=>window.scrollTo({ top, behavior: 'smooth' }));
     }
     return;
   }
@@ -3324,7 +3392,7 @@ btn && btn.addEventListener('pointerup', (e)=>{ e.preventDefault(); e.stopPropag
 
 
 <script>
-/* === v104 HOTFIX: Share modal event delegation (fix iOS 'dead' buttons) === */
+/* === v105 HOTFIX: Share modal event delegation (fix iOS 'dead' buttons) === */
 (function(){
   function onActivate(e){
     const t = e.target;
@@ -3406,8 +3474,8 @@ btn && btn.addEventListener('pointerup', (e)=>{ e.preventDefault(); e.stopPropag
 
 
 
-<style id="v104-mobile-final">
-/* --- BUILD V104: FINAL MOBILE OVERRIDES (last wins) --- */
+<style id="v105-mobile-final">
+/* --- BUILD V105: FINAL MOBILE OVERRIDES (last wins) --- */
 @media (max-width: 900px), (pointer: coarse){
   html, body{
     height: auto !important;
@@ -3465,7 +3533,7 @@ btn && btn.addEventListener('pointerup', (e)=>{ e.preventDefault(); e.stopPropag
 </style>
 
 
-<script id="v104-mobile-guard">
+<script id="v105-mobile-guard">
 (function(){
   const mobile = window.matchMedia && window.matchMedia('(max-width: 900px), (pointer: coarse)').matches;
   if(!mobile) return;
@@ -3489,7 +3557,7 @@ btn && btn.addEventListener('pointerup', (e)=>{ e.preventDefault(); e.stopPropag
 
 
 <script>
-/* --- BUILD V104: MOBILE NAV CONTROLLER (STABLE) --- */
+/* --- BUILD V105: MOBILE NAV CONTROLLER (STABLE) --- */
 (function(){
   const mq = window.matchMedia ? window.matchMedia('(max-width: 980px), (pointer: coarse)') : {matches:false};
   const isMobile = () => !!mq.matches;
@@ -3623,7 +3691,7 @@ btn && btn.addEventListener('pointerup', (e)=>{ e.preventDefault(); e.stopPropag
 
 
 <script>
-/* --- BUILD V104: CLEAN MOBILE CONTROLLER --- */
+/* --- BUILD V105: CLEAN MOBILE CONTROLLER --- */
 (function(){
   const mq = window.matchMedia ? window.matchMedia('(max-width: 980px), (pointer: coarse)') : {matches:false};
   const isMobile = () => !!mq.matches;
@@ -3731,7 +3799,7 @@ btn && btn.addEventListener('pointerup', (e)=>{ e.preventDefault(); e.stopPropag
 
 
 <script>
-/* --- BUILD V104: UNIFIED NAV (DESKTOP + MOBILE) --- */
+/* --- BUILD V105: UNIFIED NAV (DESKTOP + MOBILE) --- */
 (function(){
   const mq = window.matchMedia ? window.matchMedia('(max-width: 980px), (pointer: coarse)') : {matches:false};
   const isMobile = () => !!mq.matches;
@@ -3876,189 +3944,29 @@ btn && btn.addEventListener('pointerup', (e)=>{ e.preventDefault(); e.stopPropag
 </script>
 
 
+
+<div class="deskNav" aria-label="Slide navigation (desktop)">
+  <button type="button" id="prevBtn" aria-label="Previous slide">‹</button>
+  <button type="button" id="nextBtn" aria-label="Next slide">›</button>
+</div>
+
+
 <script>
-/* --- BUILD V104: STABLE MOBILE NAV + PAGE INDEX --- */
+/* --- BUILD V105: DESKTOP ARROW HOOK --- */
 (function(){
-  const mq = window.matchMedia ? window.matchMedia('(max-width: 980px), (pointer: coarse)') : {matches:false};
-  const isMobile = () => !!mq.matches;
+  const prev = document.getElementById('prevBtn');
+  const next = document.getElementById('nextBtn');
+  if(!prev || !next) return;
 
-  const deck = document.getElementById('deck') || document.querySelector('.deck');
-  const slides = Array.from(document.querySelectorAll('.slide, section.slide'));
-  if(!slides.length) return;
-
-  const prevBtn = document.getElementById('prevBtn') || document.getElementById('mPrev') ||
-                  document.querySelector('[data-nav="prev"], .navPrev, .mobilePrev, .prevBtn');
-  const nextBtn = document.getElementById('nextBtn') || document.getElementById('mNext') ||
-                  document.querySelector('[data-nav="next"], .navNext, .mobileNext, .nextBtn');
-
-  let idx = 0;
-  let navLock = false;
-  let snapRestoreT = null;
-
-  function setUI(i){
-    idx = i;
-    const pnum = document.getElementById('pnum');
-    const dots = document.getElementById('dots');
-    if(pnum) pnum.textContent = `${i+1}/${slides.length}`;
-    if(dots) Array.from(dots.children).forEach((d,di)=>d.className = di===i ? 'on' : '');
-    slides.forEach((s,si)=>s.classList.toggle('active', si===i));
-  }
-
-  function desktopGo(i){
-    i = Math.max(0, Math.min(slides.length-1, i));
-    setUI(i);
-    if(deck){
-      deck.style.transform = `translateX(-${i * 100}vw)`;
-    }
-  }
-
-  // Temporarily disable snap to prevent iOS skipping small slides (e.g., slide 6)
-  function withSnapDisabled(fn){
-    if(!isMobile()) return fn();
-    const body = document.body;
-    const prev = body.style.scrollSnapType;
-    body.style.scrollSnapType = 'none';
-    try { fn(); } finally {
-      clearTimeout(snapRestoreT);
-      snapRestoreT = setTimeout(()=>{ body.style.scrollSnapType = prev || 'y proximity'; }, 350);
-    }
-  }
-
-  function mobileGo(i){
-    i = Math.max(0, Math.min(slides.length-1, i));
-    navLock = true;
-    setUI(i);
-    const top = slides[i].offsetTop - 1; // tiny bias upward so snap resolves to this slide
-    withSnapDisabled(()=>{
-      window.scrollTo({ top, behavior: 'auto' });
-      requestAnimationFrame(()=>window.scrollTo({ top, behavior: 'smooth' }));
-    });
-    clearTimeout(window.__tmNavLock);
-    window.__tmNavLock = setTimeout(()=>{ navLock = false; }, 650);
-  }
-
-  function go(i){
-    if(isMobile()) mobileGo(i);
-    else desktopGo(i);
-  }
-
-  function closestIndex(){
-    const y = window.scrollY || document.documentElement.scrollTop || 0;
-    const vh = window.innerHeight || 1;
-    const probe = y + vh * 0.35; // stable "current" point
-    let best = 0;
-    for(let i=0;i<slides.length;i++){
-      if(slides[i].offsetTop <= probe) best = i;
-      else break;
-    }
-    return best;
-  }
-
-  function prev(e){
-    if(e){ e.preventDefault(); e.stopPropagation(); }
-    const cur = isMobile() ? closestIndex() : idx;
-    go(cur - 1);
-  }
-  function next(e){
-    if(e){ e.preventDefault(); e.stopPropagation(); }
-    const cur = isMobile() ? closestIndex() : idx;
-    go(cur + 1);
-  }
-
-  function bindButtons(){
-    if(prevBtn){
-      prevBtn.onclick = prev;
-      prevBtn.addEventListener('touchend', prev, {capture:true});
-    }
-    if(nextBtn){
-      nextBtn.onclick = next;
-      nextBtn.addEventListener('touchend', next, {capture:true});
-    }
-  }
-
-  // Prevent background tap-to-advance from hijacking on mobile
-  function blockBackgroundAdvance(){
-    const stopper = (e)=>{
-      if(!isMobile()) return;
-      const ok = e.target.closest('button, a, .nav, .mobileNav, [data-action], [data-nav], [role="button"]');
-      if(ok) return;
-      e.stopPropagation();
-    };
-    document.addEventListener('click', stopper, true);
-    document.addEventListener('touchstart', stopper, true);
-  }
-
-  // Smooth scroll: disable snap during active finger scroll, re-enable after idle
-  function dynamicSnapDuringScroll(){
-    if(!isMobile()) return;
-    let idleT = null;
-    const body = document.body;
-
-    const disable = ()=>{ body.style.scrollSnapType = 'none'; };
-    const enable = ()=>{ body.style.scrollSnapType = 'y proximity'; };
-
-    const onScroll = ()=>{
-      if(navLock) return;
-      disable();
-      clearTimeout(idleT);
-      idleT = setTimeout(()=>{
-        enable();
-        // Update UI on settle
-        setUI(closestIndex());
-      }, 140);
-    };
-
-    window.addEventListener('scroll', onScroll, {passive:true});
-  }
-
-  // Keep page number stable while scrolling (no random jumps)
-  function stablePageIndex(){
-    let raf = 0;
-    function tick(){
-      raf = 0;
-      if(isMobile() && !navLock){
-        setUI(closestIndex());
-      }
-    }
-    window.addEventListener('scroll', ()=>{
-      if(raf) return;
-      raf = requestAnimationFrame(tick);
-    }, {passive:true});
-  }
-
-  function applyMode(){
-    if(isMobile()){
-      document.documentElement.style.overflowY = 'auto';
-      document.body.style.overflowY = 'auto';
-      document.body.style.overflowX = 'hidden';
-      document.body.style.touchAction = 'pan-y';
-      if(deck){
-        deck.style.transform = 'none';
-        deck.style.translate = 'none';
-        deck.style.display = 'block';
-        deck.style.width = '100%';
-        deck.style.height = 'auto';
-      }
-      slides.forEach(s=>{ s.style.opacity='1'; s.style.visibility='visible'; s.style.pointerEvents='auto'; });
-      setUI(closestIndex());
-    }else{
-      desktopGo(idx);
-    }
-  }
-
-  function init(){
-    bindButtons();
-    blockBackgroundAdvance();
-    dynamicSnapDuringScroll();
-    stablePageIndex();
-    applyMode();
-  }
-
-  window.addEventListener('resize', applyMode, {passive:true});
-  if(mq.addEventListener) mq.addEventListener('change', applyMode);
-  else if(mq.addListener) mq.addListener(applyMode);
-
-  requestAnimationFrame(()=>requestAnimationFrame(init));
+  // The main deck script defines `idx`, `slides`, and `update()` in the global scope of its script.
+  // We can't directly access its local `idx`, so we trigger navigation by dispatching keyboard events,
+  // which the deck already listens to (ArrowLeft/ArrowRight).
+  const fire = (key) => {
+    const ev = new KeyboardEvent('keydown', { key, bubbles:true });
+    document.dispatchEvent(ev);
+  };
+  prev.addEventListener('click', (e)=>{ e.preventDefault(); fire('ArrowLeft'); });
+  next.addEventListener('click', (e)=>{ e.preventDefault(); fire('ArrowRight'); });
 })();
 </script>
 
