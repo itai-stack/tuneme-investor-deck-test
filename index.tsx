@@ -882,5 +882,11 @@ const App = () => {
   );
 };
 
-const root = createRoot(document.getElementById('root')!);
-root.render(<App />);
+// Check for root element availability and log error if missing
+const rootElement = document.getElementById('root');
+if (!rootElement) {
+    console.error("Failed to find the root element");
+} else {
+    const root = createRoot(rootElement);
+    root.render(<App />);
+}
