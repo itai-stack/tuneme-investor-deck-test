@@ -20,15 +20,15 @@ const teamData = {
   itai: {
     name: "Itai Argaman",
     role: "CEO & CO-FOUNDER",
-    // Updated to new photo ID: 1gxArPetBgtslObGzLnBBMgRDPbfM_Gwx
-    image: "https://lh3.googleusercontent.com/d/1gxArPetBgtslObGzLnBBMgRDPbfM_Gwx",
+    // Updated to reliable direct link format
+    image: "https://drive.google.com/uc?export=view&id=1gxArPetBgtslObGzLnBBMgRDPbfM_Gwx",
     bio: "Audio technology & commercialization. Former Waves Audio. Collaboration with Google and Meta on audio-based consumer products."
   },
   motti: {
     name: "Motti Ratmansky, MD",
     role: "CMO & CO-FOUNDER",
-    // Updated to new photo ID: 1q0mA0l6ufa6tw5IKGA5qAr3OBDEPgRqC
-    image: "https://lh3.googleusercontent.com/d/1q0mA0l6ufa6tw5IKGA5qAr3OBDEPgRqC",
+    // Updated to reliable direct link format
+    image: "https://drive.google.com/uc?export=view&id=1q0mA0l6ufa6tw5IKGA5qAr3OBDEPgRqC",
     bio: "Pain management & rehabilitation specialist. Leads clinical validation."
   }
 };
@@ -143,14 +143,14 @@ const ShareButton = () => {
             position: fixed;
             top: 30px;
             right: 30px;
-            z-index: 2000;
+            z-index: 9999;
         }
         .share-btn-trigger {
             width: 44px;
             height: 44px;
             border-radius: 50%;
             border: 1px solid rgba(255, 255, 255, 0.2);
-            background: rgba(255, 255, 255, 0.05);
+            background: rgba(255, 255, 255, 0.1);
             color: white;
             cursor: pointer;
             backdrop-filter: blur(4px);
@@ -160,8 +160,9 @@ const ShareButton = () => {
             justify-content: center;
         }
         .share-btn-trigger:hover {
-            background: rgba(255, 255, 255, 0.15);
-            border-color: rgba(255, 255, 255, 0.4);
+            background: rgba(255, 255, 255, 0.2);
+            border-color: rgba(255, 255, 255, 0.5);
+            transform: scale(1.05);
         }
         .share-menu {
             position: absolute;
@@ -270,7 +271,7 @@ const StunningBackground = ({ currentSlide }: { currentSlide: number }) => {
     let stars: Star[] = [];
 
     const initStars = (w: number, h: number) => {
-       // Keep density very low (sparse) - reduced by half (60000 instead of 30000)
+       // Keep density very low (sparse)
        const count = Math.floor((w * h) / 60000); 
        const newStars: Star[] = [];
        for(let i=0; i<count; i++){
@@ -340,8 +341,9 @@ const StunningBackground = ({ currentSlide }: { currentSlide: number }) => {
       curC2.b = lerp(curC2.b, targetC2.b, speed);
 
       // 3. Draw Audio-style Sine Waves
-      ctx.globalCompositeOperation = 'screen'; 
-      ctx.lineWidth = 1; // Thinner lines
+      // Removed 'screen' composite operation for darker/subtler lines
+      ctx.globalCompositeOperation = 'source-over'; 
+      ctx.lineWidth = 1; 
       
       const waveCount = 3; 
       const centerY = height / 2;
@@ -352,11 +354,12 @@ const StunningBackground = ({ currentSlide }: { currentSlide: number }) => {
         const g = lerp(curC1.g, curC2.g, mix);
         const b = lerp(curC1.b, curC2.b, mix);
         
-        // Reduced glow intensity
-        ctx.shadowBlur = 10;
-        ctx.shadowColor = `rgba(${Math.round(r)},${Math.round(g)},${Math.round(b)}, 0.3)`;
-        // Significantly reduced opacity for "background" feel
-        ctx.strokeStyle = `rgba(${Math.round(r)},${Math.round(g)},${Math.round(b)}, 0.15)`;
+        // Remove glow shadow
+        ctx.shadowBlur = 0;
+        ctx.shadowColor = `rgba(0,0,0,0)`;
+        
+        // Significantly reduced opacity (0.05 - 0.1) for dark background effect
+        ctx.strokeStyle = `rgba(${Math.round(r)},${Math.round(g)},${Math.round(b)}, 0.1)`;
         
         ctx.beginPath();
         
@@ -377,10 +380,6 @@ const StunningBackground = ({ currentSlide }: { currentSlide: number }) => {
         ctx.stroke();
       }
       
-      // Reset context
-      ctx.shadowBlur = 0;
-      ctx.globalCompositeOperation = 'source-over';
-
       requestAnimationFrame(animate);
     };
 
