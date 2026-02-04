@@ -20,15 +20,15 @@ const teamData = {
   itai: {
     name: "Itai Argaman",
     role: "CEO & CO-FOUNDER",
-    // Updated to reliable direct link format
-    image: "https://drive.google.com/uc?export=view&id=1gxArPetBgtslObGzLnBBMgRDPbfM_Gwx",
+    // using thumbnail endpoint with large size (sz=w1000) for better reliability
+    image: "https://drive.google.com/thumbnail?id=1gxArPetBgtslObGzLnBBMgRDPbfM_Gwx&sz=w1000",
     bio: "Audio technology & commercialization. Former Waves Audio. Collaboration with Google and Meta on audio-based consumer products."
   },
   motti: {
     name: "Motti Ratmansky, MD",
     role: "CMO & CO-FOUNDER",
-    // Updated to reliable direct link format
-    image: "https://drive.google.com/uc?export=view&id=1q0mA0l6ufa6tw5IKGA5qAr3OBDEPgRqC",
+    // using thumbnail endpoint with large size (sz=w1000) for better reliability
+    image: "https://drive.google.com/thumbnail?id=1q0mA0l6ufa6tw5IKGA5qAr3OBDEPgRqC&sz=w1000",
     bio: "Pain management & rehabilitation specialist. Leads clinical validation."
   }
 };
@@ -141,9 +141,9 @@ const ShareButton = () => {
       <style>{`
         .share-container {
             position: fixed;
-            top: 30px;
-            right: 30px;
-            z-index: 9999;
+            top: 20px;
+            right: 20px;
+            z-index: 10001;
         }
         .share-btn-trigger {
             width: 44px;
@@ -158,6 +158,7 @@ const ShareButton = () => {
             display: flex;
             align-items: center;
             justify-content: center;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
         }
         .share-btn-trigger:hover {
             background: rgba(255, 255, 255, 0.2);
@@ -180,6 +181,7 @@ const ShareButton = () => {
             gap: 2px;
             animation: menuFadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
             overflow: hidden;
+            z-index: 10002;
         }
         @keyframes menuFadeIn {
             from { opacity: 0; transform: translateY(-10px) scale(0.95); }
@@ -358,8 +360,8 @@ const StunningBackground = ({ currentSlide }: { currentSlide: number }) => {
         ctx.shadowBlur = 0;
         ctx.shadowColor = `rgba(0,0,0,0)`;
         
-        // Significantly reduced opacity (0.05 - 0.1) for dark background effect
-        ctx.strokeStyle = `rgba(${Math.round(r)},${Math.round(g)},${Math.round(b)}, 0.1)`;
+        // Darker lines: Reduced opacity to 0.05
+        ctx.strokeStyle = `rgba(${Math.round(r)},${Math.round(g)},${Math.round(b)}, 0.05)`;
         
         ctx.beginPath();
         
@@ -782,6 +784,7 @@ const App = () => {
                     src={teamData.itai.image} 
                     alt={teamData.itai.name} 
                     style={{width: '100%', height: '100%', objectFit: 'cover'}}
+                    onError={(e) => { e.currentTarget.style.display='none'; e.currentTarget.parentElement!.innerText = 'IA'; e.currentTarget.parentElement!.style.display='flex'; e.currentTarget.parentElement!.style.alignItems='center'; e.currentTarget.parentElement!.style.justifyContent='center'; e.currentTarget.parentElement!.style.fontSize='24px'; }}
                   />
                 </div>
                 <div>
@@ -800,6 +803,7 @@ const App = () => {
                      src={teamData.motti.image} 
                      alt={teamData.motti.name} 
                      style={{width: '100%', height: '100%', objectFit: 'cover'}}
+                     onError={(e) => { e.currentTarget.style.display='none'; e.currentTarget.parentElement!.innerText = 'MR'; e.currentTarget.parentElement!.style.display='flex'; e.currentTarget.parentElement!.style.alignItems='center'; e.currentTarget.parentElement!.style.justifyContent='center'; e.currentTarget.parentElement!.style.fontSize='24px'; }}
                    />
                 </div>
                 <div>
@@ -828,9 +832,9 @@ const App = () => {
           <TopBar title="TuneMe AI" />
           <div className="grow" style={{alignItems: 'center', justifyContent: 'center', textAlign: 'center', position: 'relative', zIndex: 10}}>
             
-            <div className="anim-target" style={{marginBottom: '60px'}}>
+            <div className="anim-target" style={{marginBottom: '30px'}}>
                <h1 style={{
-                 fontSize: 'clamp(60px, 10vw, 150px)', 
+                 fontSize: 'clamp(50px, 10vw, 120px)', 
                  lineHeight: '0.9', 
                  background: 'linear-gradient(135deg, #fff 20%, var(--accent-cyan) 100%)',
                  WebkitBackgroundClip: 'text',
@@ -843,29 +847,30 @@ const App = () => {
                     WebkitTextFillColor: 'transparent'
                  }}>Act.</span>
                </h1>
-               <p style={{margin: '30px auto 0', fontSize: '24px', color: '#fff', opacity: 0.8, maxWidth: '600px'}}>
+               <p style={{margin: '20px auto 0', fontSize: '24px', color: '#fff', opacity: 0.8, maxWidth: '600px'}}>
                  The world already has the sensors. <br/>TuneMe delivers the rest.
                </p>
             </div>
 
             <div className="anim-target contact-grid-mobile" style={{
-                display: 'grid',
-                gridTemplateColumns: '1fr 1fr',
+                display: 'flex',
+                flexWrap: 'wrap',
+                justifyContent: 'center',
                 gap: '20px',
                 width: '100%',
                 maxWidth: '600px'
             }}>
-                <div className="card" style={{padding: '30px', display: 'flex', flexDirection: 'column', gap: '10px', alignItems: 'center', borderColor: 'var(--accent-purple)', background: 'rgba(112,0,255,0.1)'}}>
+                <div className="card" style={{flex: '1 1 200px', padding: '24px', display: 'flex', flexDirection: 'column', gap: '10px', alignItems: 'center', borderColor: 'var(--accent-purple)', background: 'rgba(112,0,255,0.1)'}}>
                    <span className="tag" style={{justifyContent: 'center', color: '#fff'}}>Get in Touch</span>
                    <a href="mailto:itai@tuneme.io" style={{color: '#fff', textDecoration: 'none', fontSize: '20px', fontWeight: 'bold'}}>itai@tuneme.io</a>
                 </div>
-                <div className="card" style={{padding: '30px', display: 'flex', flexDirection: 'column', gap: '10px', alignItems: 'center', borderColor: 'var(--accent-cyan)', background: 'rgba(0,240,255,0.1)'}}>
+                <div className="card" style={{flex: '1 1 200px', padding: '24px', display: 'flex', flexDirection: 'column', gap: '10px', alignItems: 'center', borderColor: 'var(--accent-cyan)', background: 'rgba(0,240,255,0.1)'}}>
                    <span className="tag" style={{justifyContent: 'center', color: '#fff'}}>Visit Website</span>
                    <a href="https://tuneme.io" target="_blank" style={{color: '#fff', textDecoration: 'none', fontSize: '20px', fontWeight: 'bold'}}>tuneme.io</a>
                 </div>
             </div>
 
-            <div className="anim-target" style={{marginTop: '40px', opacity: 0.5, fontSize: '12px', letterSpacing: '0.1em'}}>
+            <div className="anim-target" style={{marginTop: '30px', opacity: 0.5, fontSize: '12px', letterSpacing: '0.1em'}}>
                TUNEME AI © 2026 • PROPRIETARY & CONFIDENTIAL
             </div>
 
