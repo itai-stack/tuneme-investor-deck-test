@@ -24,8 +24,12 @@
 
   /* Deck Layout */
   .deck-container { display: flex; transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1); height: 100vh; width: 100vw; position: relative; z-index: 2; }
-  .slide { min-width: 100vw; height: 100vh; display: flex; flex-direction: column; padding: 80px 10%; box-sizing: border-box; opacity: 0.3; transition: opacity 0.6s; filter: blur(2px); }
+  .slide { min-width: 100vw; height: 100vh; display: flex; flex-direction: column; padding: 80px 10%; box-sizing: border-box; opacity: 0.3; transition: opacity 0.6s; filter: blur(2px); overflow-y: auto; overflow-x: hidden; }
   .slide.active { opacity: 1; filter: blur(0); }
+  
+  /* Scrollbar hide */
+  .slide::-webkit-scrollbar { display: none; }
+  .slide { -ms-overflow-style: none; scrollbar-width: none; }
   
   /* Typography */
   h1 { font-size: 64px; margin: 0 0 20px 0; line-height: 1.1; letter-spacing: -0.02em; }
@@ -44,7 +48,7 @@
   .progress-bar { position: fixed; top: 0; left: 0; height: 4px; background: var(--accent-cyan); z-index: 100; transition: width 0.3s; box-shadow: 0 0 10px var(--accent-cyan); }
   
   .nav-controls { position: fixed; bottom: 40px; right: 40px; z-index: 100; display: flex; gap: 10px; }
-  .nav-btn { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: #fff; width: 40px; height: 40px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
+  .nav-btn { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: #fff; width: 40px; height: 40px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; backdrop-filter: blur(5px); }
   .nav-btn:hover { background: #fff; color: #000; }
 
   .grow { flex-grow: 1; display: flex; flex-direction: column; justify-content: center; }
@@ -52,12 +56,14 @@
   .slide.active .anim-target { opacity: 1; transform: translateY(0); }
   
   /* Slide Specifics */
-  .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; }
-  .pillRow { display: flex; gap: 10px; flex-wrap: wrap; }
-  .pill { padding: 6px 14px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.2); font-size: 12px; font-family: 'JetBrains Mono', monospace; }
+  .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-top: 50px; text-align: left; }
+  .pillRow { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
+  .pill { padding: 6px 14px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.2); font-size: 12px; font-family: 'JetBrains Mono', monospace; white-space: nowrap; }
   
-  .problem-grid { display: grid; grid-template-columns: 1.2fr 1fr; gap: 30px; margin-top: 30px; height: 400px; }
-  .card { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; padding: 24px; backdrop-filter: blur(10px); }
+  .problem-grid { display: grid; grid-template-columns: 1.2fr 1fr; gap: 30px; margin-top: 30px; }
+  
+  .card { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; padding: 24px; backdrop-filter: blur(10px); transition: transform 0.3s ease, border-color 0.3s ease; }
+  .card:hover { border-color: rgba(255,255,255,0.3); }
   .pain-card { display: flex; flex-direction: column; justify-content: space-between; }
   .unlock-card { background: linear-gradient(145deg, rgba(20,20,30,0.8), rgba(0,0,0,0.9)); border: 1px solid var(--accent-cyan); display: flex; flex-direction: column; justify-content: center; }
   
@@ -77,10 +83,44 @@
   .kpi .v { font-size: 24px; font-weight: 700; display: block; color: #fff; }
   .kpi .l { font-size: 11px; color: var(--text-muted); text-transform: uppercase; }
   
-  .team-grid { margin-top: 30px; }
-  .team-card { display: flex; gap: 20px; align-items: center; }
+  /* Improved Team Section */
+  .team-grid { margin-top: 30px; display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-bottom: 30px; }
+  .team-card { display: flex; gap: 20px; align-items: center; padding: 25px; border: 1px solid rgba(255,255,255,0.08); background: linear-gradient(180deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.01) 100%); border-radius: 16px; transition: transform 0.3s; }
+  .team-card:hover { transform: translateY(-5px); border-color: var(--accent-purple); box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+  .team-card .avatar img { border-radius: 50%; width: 100%; height: 100%; object-fit: cover; }
   
   .glow-orb { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 600px; height: 600px; background: radial-gradient(circle, rgba(0,240,255,0.05) 0%, rgba(0,0,0,0) 70%); pointer-events: none; z-index: 1; }
+
+  /* Mobile Optimization */
+  @media (max-width: 768px) {
+    .slide { padding: 80px 20px 40px 20px; height: auto; min-height: 100vh; justify-content: flex-start; }
+    h1 { font-size: 38px; }
+    h2 { font-size: 30px; }
+    h3 { font-size: 20px; }
+    p { font-size: 16px; }
+    
+    .stats-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
+    .problem-grid { grid-template-columns: 1fr; height: auto; }
+    .steps { flex-direction: column; gap: 15px; }
+    .arrow { transform: rotate(90deg); margin: 5px 0; }
+    .twoEq, .team-grid { grid-template-columns: 1fr; gap: 20px; }
+    
+    .team-card { flex-direction: column; text-align: center; }
+    
+    .kpis { grid-template-columns: 1fr 1fr 1fr; }
+    
+    .topbar { left: 20px; right: 20px; }
+    .nav-controls { bottom: 20px; right: 20px; }
+    .grow { justify-content: flex-start; padding-top: 20px; }
+    
+    .pillRow { flex-wrap: wrap; }
+    
+    .glow-orb { width: 300px; height: 300px; }
+    
+    /* Contact Slide specific mobile tweak */
+    .contact-grid-mobile { grid-template-columns: 1fr !important; }
+    .last-slide h1 { font-size: 48px !important; }
+  }
 </style>
 <script type="importmap">
 {

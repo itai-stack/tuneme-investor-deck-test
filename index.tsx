@@ -160,7 +160,7 @@ const App = () => {
               <h1>10 seconds of voice <br/><span className="emph">→ physiology.</span></h1>
               <p style={{marginTop: '24px', fontSize: '20px', maxWidth: '600px', lineHeight: '1.6', marginInline: 'auto'}}>TuneMe converts a short voice sample into a real-time signal of <b>stress</b> and <b>autonomic balance</b>.</p>
               
-              <div style={{display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '15px', marginTop: '50px', textAlign: 'left'}} className="stats-grid">
+              <div className="stats-grid">
                 <div style={{background: 'linear-gradient(180deg, rgba(20,20,40,0.8) 0%, rgba(10,10,20,0.9) 100%)', border: '1px solid rgba(50,50,80,0.5)', borderRadius: '12px', padding: '16px', boxShadow: 'inset 0 0 20px rgba(0,0,0,0.5)'}}>
                   <div style={{fontSize: '24px', fontWeight: '800', color: '#fff', marginBottom: '4px'}}>10s</div>
                   <div style={{fontSize: '10px', color: '#8899aa', textTransform: 'uppercase', letterSpacing: '0.05em'}}>Voice Check-in</div>
@@ -434,9 +434,9 @@ const App = () => {
           <div className="grow">
             <h2 className="anim-target" style={{marginBottom: '40px'}}>Built at the intersection of audio + medicine</h2>
             
-            <div className="team-grid anim-target" style={{display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '30px', marginBottom: '30px'}}>
+            <div className="team-grid anim-target">
               {/* Itai */}
-              <div className="card team-card">
+              <div className="team-card">
                 <div className="avatar" style={{width: 90, height: 90, flexShrink: 0, borderRadius: '50%', background: '#222', border: '2px solid rgba(255,255,255,0.1)'}}>
                   <img src="https://ui-avatars.com/api/?name=Itai+Argaman&background=0a0f18&color=fff&size=200&font-size=0.33" alt="Itai Argaman" />
                 </div>
@@ -450,7 +450,7 @@ const App = () => {
               </div>
 
               {/* Motti */}
-              <div className="card team-card">
+              <div className="team-card">
                 <div className="avatar" style={{width: 90, height: 90, flexShrink: 0, borderRadius: '50%', background: '#222', border: '2px solid rgba(255,255,255,0.1)'}}>
                    <img src="https://ui-avatars.com/api/?name=Motti+Ratmansky&background=0a0f18&color=fff&size=200&font-size=0.33" alt="Motti Ratmansky" />
                 </div>
@@ -500,7 +500,7 @@ const App = () => {
                </p>
             </div>
 
-            <div className="anim-target" style={{
+            <div className="anim-target contact-grid-mobile" style={{
                 display: 'grid',
                 gridTemplateColumns: '1fr 1fr',
                 gap: '20px',
@@ -518,7 +518,7 @@ const App = () => {
             </div>
 
             <div className="anim-target" style={{marginTop: '40px', opacity: 0.5, fontSize: '12px', letterSpacing: '0.1em'}}>
-               TUNEME AI © 2025 • PROPRIETARY & CONFIDENTIAL
+               TUNEME AI © 2026 • PROPRIETARY & CONFIDENTIAL
             </div>
 
           </div>
