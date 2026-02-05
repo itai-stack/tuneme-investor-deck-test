@@ -1,404 +1,68 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TuneMe - Biomarker Engine</title>
-    <style>
-        :root {
-            --accent-cyan: #00f0ff;
-            --accent-purple: #7000ff;
-            --accent-pink: #ff0080;
-            --accent-gold: #ffd700;
-            --text-muted: #8899aa;
-            --bg-color: #050510;
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>TuneMe | Confidential</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;800&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        bg: '#050510',
+                        cyan: '#00f0ff',
+                        purple: '#7000ff',
+                        muted: '#8899aa',
+                        'accent-pink': '#ff0055',
+                        'accent-gold': '#ffcc00',
+                    },
+                    backgroundImage: {
+                        'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
+                    }
+                }
+            }
         }
-
-        html {
-            background-color: var(--bg-color);
-        }
-
-        body {
-            margin: 0;
-            padding: 0;
-            background-color: transparent; /* Changed to transparent to show canvas */
-            color: white;
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            overflow: hidden;
-            width: 100vw;
-	        height: 100vh;
-	        /* Mobile Safari address-bar friendly viewport */
-	        height: 100dvh;
-        }
-
-        #root {
-            width: 100%;
-            height: 100%;
-        }
-
-        #canvas-bg {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: -1;
-        }
-
-        /* Navigation */
-        .progress-bar {
-            position: fixed;
-            top: 0;
-            left: 0;
-            height: 4px;
-            background: var(--accent-cyan);
-            box-shadow: 0 0 10px var(--accent-cyan);
-            z-index: 1000;
-            transition: width 0.3s ease;
-        }
-
-        .nav-controls {
-            position: fixed;
-	        bottom: calc(20px + env(safe-area-inset-bottom));
-	        right: calc(20px + env(safe-area-inset-right));
-            z-index: 1000;
-            display: flex;
-            gap: 12px;
-        }
-
-        .nav-btn {
-            width: 44px;
-            height: 44px;
-            border-radius: 50%;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            background: rgba(255, 255, 255, 0.05);
-            color: white;
-            font-size: 18px;
-            cursor: pointer;
-            backdrop-filter: blur(4px);
-            transition: all 0.2s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 0;
-        }
-
-        .nav-btn:hover {
-            background: rgba(255, 255, 255, 0.15);
-            border-color: rgba(255, 255, 255, 0.4);
-        }
-
-        /* Share Button */
-        .share-btn {
-            position: fixed;
-	        top: calc(20px + env(safe-area-inset-top));
-	        right: calc(20px + env(safe-area-inset-right));
-            z-index: 1001;
-            width: 44px;
-            height: 44px;
-            border-radius: 50%;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            background: rgba(255, 255, 255, 0.05);
-            color: white;
-            cursor: pointer;
-            backdrop-filter: blur(4px);
-            transition: all 0.2s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 0;
-        }
-        
-        .share-btn:hover {
-            background: rgba(255, 255, 255, 0.15);
-            border-color: rgba(255, 255, 255, 0.4);
-            transform: scale(1.05);
-        }
-
-        /* Deck & Slides */
-        .deck-container {
-            display: flex;
-            height: 100vh;
-            width: 100vw;
-            transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
-	        /* Allow vertical scroll inside slides, while still enabling horizontal swipe */
-	        touch-action: pan-y;
-        }
-
-        .slide {
-            width: 100vw;
-            height: 100vh;
-            flex-shrink: 0;
-            padding: 40px 80px;
-            box-sizing: border-box;
-            display: flex;
-            flex-direction: column;
-            opacity: 0.3;
-            transition: opacity 0.6s 0.2s;
-            overflow-y: auto;
-            position: relative;
-        }
-
-        .slide.active {
-            opacity: 1;
-        }
-
-        /* Typography */
-        h1 { font-size: 56px; margin: 0; font-weight: 800; letter-spacing: -0.02em; }
-        h2 { font-size: 42px; margin: 0 0 24px 0; font-weight: 700; letter-spacing: -0.01em; }
-        h3 { font-size: 24px; margin: 0 0 12px 0; font-weight: 600; }
-        p { font-size: 18px; line-height: 1.6; color: #d0d0e0; margin-bottom: 16px; }
-
-        .muted { color: var(--text-muted); font-size: 16px; }
-        .emph { color: var(--accent-cyan); }
-        .emph2 { color: var(--accent-purple); }
-
-        /* Top Bar */
-        .topbar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-            height: 60px;
-            flex-shrink: 0;
-        }
-
-        .kicker {
-            font-size: 14px;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            color: var(--text-muted);
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            font-weight: 600;
-        }
-
-        .dot {
-            width: 8px;
-            height: 8px;
-            background: var(--accent-cyan);
-            border-radius: 50%;
-            box-shadow: 0 0 10px var(--accent-cyan);
-        }
-
-        .logoPill {
-            padding: 0;
-            background: transparent;
-            border: none;
-        }
-
-        /* Layout Helpers */
-        .grow {
-            flex-grow: 1;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            max-width: 1200px;
-            width: 100%;
-            margin: 0 auto;
-        }
-
-        .center { align-items: center; }
-
-        /* Stats Grid */
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 20px;
-            width: 100%;
-        }
-
-        /* Pills */
-        .pillRow {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-            margin-top: 10px;
-        }
-
-        .pill {
-            padding: 6px 14px;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 20px;
-            font-size: 12px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            background: rgba(255, 255, 255, 0.03);
-            white-space: nowrap;
-        }
-
-        /* Problem Grid */
-        .problem-grid {
-            display: grid;
-            grid-template-columns: 1.2fr 0.8fr;
-            gap: 30px;
-            width: 100%;
-        }
-
-        .card {
-            background: rgba(20, 20, 30, 0.6);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 16px;
-            padding: 30px;
-            backdrop-filter: blur(10px);
-            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
-        
-        .card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 40px rgba(0,0,0,0.5);
-        }
-
-        .pain-card { border-left: 4px solid var(--accent-pink); }
-        .unlock-card { border-left: 4px solid var(--accent-cyan); }
-
-        .stats-2x2 {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 24px;
-        }
-
-        .stat-item .v { font-size: 28px; font-weight: 700; display: block; margin-bottom: 4px; }
-        .stat-item .l { font-size: 12px; color: var(--text-muted); line-height: 1.3; }
-
-        /* Steps */
-        .steps {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 20px;
-            width: 100%;
-        }
-
-        .step {
-            flex: 1;
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            padding: 24px;
-            border-radius: 12px;
-            text-align: center;
-        }
-
-        .arrow { font-size: 24px; color: #445566; }
-        
-        .tag {
-            font-size: 10px;
-            text-transform: uppercase;
-            letter-spacing: 1.5px;
-            color: var(--accent-cyan);
-            display: flex;
-            align-items: center;
-            margin-bottom: 12px;
-            font-weight: 700;
-        }
-
-        /* Two Columns Equal */
-        .twoEq {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 30px;
-            width: 100%;
-        }
-
-        /* KPI Grid */
-        .kpis {
-            display: grid;
-            gap: 20px;
-        }
-
-        .kpi { display: flex; flex-direction: column; }
-        .kpi .v { font-size: 36px; font-weight: 800; color: white; margin-bottom: 5px; }
-        .kpi .l { font-size: 13px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; }
-
-        /* Team */
-        .team-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 30px;
-        }
-
-        .team-card {
-            display: flex;
-            align-items: center;
-            gap: 24px;
-            background: rgba(255, 255, 255, 0.02);
-            padding: 24px;
-            border-radius: 16px;
-            border: 1px solid rgba(255, 255, 255, 0.08);
-        }
-
-        .avatar img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            border-radius: 50%;
-        }
-
-        /* Contact / Last Slide */
-        .glow-orb {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 800px;
-            height: 800px;
-            background: radial-gradient(circle, rgba(0, 240, 255, 0.1) 0%, rgba(0, 0, 0, 0) 70%);
-            z-index: -1;
-            pointer-events: none;
-        }
-
-        /* Mobile adjustments */
-        @media (max-width: 768px) {
-            .slide { padding: 20px; }
-            h1 { font-size: 40px; }
-            h2 { font-size: 32px; }
-            .stats-grid, .problem-grid, .twoEq, .team-grid { grid-template-columns: 1fr; }
-            .steps { flex-direction: column; gap: 10px; }
-            .arrow { transform: rotate(90deg); }
-        }
-
-        /* Animation Classes */
-        .anim-target {
-            opacity: 0;
-            transform: translateY(30px) scale(0.96);
-            filter: blur(8px);
-            transition: 
-                opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1),
-                transform 0.8s cubic-bezier(0.16, 1, 0.3, 1),
-                filter 0.8s cubic-bezier(0.16, 1, 0.3, 1);
-            will-change: opacity, transform, filter;
-        }
-
-        .slide.active .anim-target {
-            opacity: 1;
-            transform: translateY(0) scale(1);
-            filter: blur(0);
-        }
-        
-        /* Staggered Entrance */
-        .slide.active .anim-target:nth-child(1) { transition-delay: 0.1s; }
-        .slide.active .anim-target:nth-child(2) { transition-delay: 0.25s; }
-        .slide.active .anim-target:nth-child(3) { transition-delay: 0.4s; }
-        .slide.active .anim-target:nth-child(4) { transition-delay: 0.55s; }
-        .slide.active .anim-target:nth-child(5) { transition-delay: 0.7s; }
-    </style>
-    <script type="importmap">
-    {
-      "imports": {
-        "react/": "https://esm.sh/react@^19.2.4/",
-        "react": "https://esm.sh/react@^19.2.4",
-        "react-dom/": "https://esm.sh/react-dom@^19.2.4/",
-        "react-dom": "https://esm.sh/react-dom@^19.2.4"
-      }
-    }
     </script>
-	<!-- All styles are inlined for easy GitHub Pages hosting -->
+    <style>
+        body {
+            background-color: #050510;
+            color: white;
+            overflow: hidden;
+            -webkit-font-smoothing: antialiased;
+        }
+        /* Custom scrollbar for slide content */
+        .slide-content::-webkit-scrollbar {
+            width: 6px;
+        }
+        .slide-content::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .slide-content::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 3px;
+        }
+        .slide-content::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.4);
+        }
+    </style>
+<script type="importmap">
+{
+  "imports": {
+    "react": "https://esm.sh/react@^19.2.4",
+    "react-dom/": "https://esm.sh/react-dom@^19.2.4/",
+    "react/": "https://esm.sh/react@^19.2.4/"
+  }
+}
+</script>
+<link rel="stylesheet" href="/index.css">
 </head>
 <body>
     <div id="root"></div>
-	<!-- Compiled bundle (TSX → JS) for broad mobile compatibility -->
-	<script type="module" src="./deck.js"></script>
+<script type="module" src="/index.tsx"></script>
 </body>
 </html>
