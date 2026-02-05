@@ -461,17 +461,17 @@
 
             const SlideSection = ({ index, children, className = '' }) => (
                 <section 
-                    className={`w-screen h-screen flex-shrink-0 overflow-y-auto overflow-x-hidden p-6 md:p-12 relative transition-opacity duration-500 ${index === currentSlide ? 'opacity-100 pointer-events-auto' : 'opacity-20 pointer-events-none'} ${className}`}
+                    className={`w-screen h-[100dvh] flex-shrink-0 overflow-y-auto overflow-x-hidden p-6 md:p-12 relative transition-opacity duration-500 ${index === currentSlide ? 'opacity-100 pointer-events-auto' : 'opacity-20 pointer-events-none'} ${className}`}
                     aria-hidden={index !== currentSlide}
                 >
-                    <div className="max-w-7xl mx-auto h-full flex flex-col slide-content pb-20">
+                    <div className="max-w-7xl mx-auto min-h-full flex flex-col slide-content pb-32 md:pb-20">
                         {children}
                     </div>
                 </section>
             );
 
             return (
-                <div className="fixed inset-0 overflow-hidden font-sans text-white bg-bg selection:bg-cyan/30">
+                <div className="fixed inset-0 overflow-hidden font-sans text-white bg-bg selection:bg-cyan/30 h-[100dvh]">
                     <Background currentSlide={currentSlide} />
                     
                     {/* Progress Bar */}
@@ -480,9 +480,9 @@
                     <ShareButton />
 
                     {/* Navigation Controls */}
-                    <div className="fixed bottom-6 right-6 z-50 flex gap-3">
-                        <button className="w-11 h-11 rounded-full border border-white/20 bg-white/5 text-white text-lg flex items-center justify-center hover:bg-white/15 transition-colors backdrop-blur-sm" onClick={prevSlide} aria-label="Previous Slide">←</button>
-                        <button className="w-11 h-11 rounded-full border border-white/20 bg-white/5 text-white text-lg flex items-center justify-center hover:bg-white/15 transition-colors backdrop-blur-sm" onClick={nextSlide} aria-label="Next Slide">→</button>
+                    <div className="fixed bottom-6 left-1/2 -translate-x-1/2 md:left-auto md:translate-x-0 md:right-6 z-50 flex gap-6 md:gap-3">
+                        <button className="w-14 h-14 md:w-11 md:h-11 rounded-full border border-white/20 bg-white/10 text-white text-xl md:text-lg flex items-center justify-center hover:bg-white/20 transition-colors backdrop-blur-md shadow-lg active:scale-95" onClick={prevSlide} aria-label="Previous Slide">←</button>
+                        <button className="w-14 h-14 md:w-11 md:h-11 rounded-full border border-white/20 bg-white/10 text-white text-xl md:text-lg flex items-center justify-center hover:bg-white/20 transition-colors backdrop-blur-md shadow-lg active:scale-95" onClick={nextSlide} aria-label="Next Slide">→</button>
                     </div>
 
                     {/* Deck Container */}
