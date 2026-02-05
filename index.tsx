@@ -20,15 +20,15 @@ const teamData = {
   itai: {
     name: "Itai Argaman",
     role: "CEO & CO-FOUNDER",
-    // using thumbnail endpoint with large size (sz=w1000) for better reliability
-    image: "https://drive.google.com/thumbnail?id=1gxArPetBgtslObGzLnBBMgRDPbfM_Gwx&sz=w1000",
+    // Updated to new photo ID: 1gxArPetBgtslObGzLnBBMgRDPbfM_Gwx
+    image: "https://lh3.googleusercontent.com/d/1gxArPetBgtslObGzLnBBMgRDPbfM_Gwx",
     bio: "Audio technology & commercialization. Former Waves Audio. Collaboration with Google and Meta on audio-based consumer products."
   },
   motti: {
     name: "Motti Ratmansky, MD",
     role: "CMO & CO-FOUNDER",
-    // using thumbnail endpoint with large size (sz=w1000) for better reliability
-    image: "https://drive.google.com/thumbnail?id=1q0mA0l6ufa6tw5IKGA5qAr3OBDEPgRqC&sz=w1000",
+    // Updated to new photo ID: 1q0mA0l6ufa6tw5IKGA5qAr3OBDEPgRqC
+    image: "https://lh3.googleusercontent.com/d/1q0mA0l6ufa6tw5IKGA5qAr3OBDEPgRqC",
     bio: "Pain management & rehabilitation specialist. Leads clinical validation."
   }
 };
@@ -141,16 +141,16 @@ const ShareButton = () => {
       <style>{`
         .share-container {
             position: fixed;
-            top: 20px;
-            right: 20px;
-            z-index: 10001;
+            top: 30px;
+            right: 30px;
+            z-index: 2000;
         }
         .share-btn-trigger {
             width: 44px;
             height: 44px;
             border-radius: 50%;
             border: 1px solid rgba(255, 255, 255, 0.2);
-            background: rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.05);
             color: white;
             cursor: pointer;
             backdrop-filter: blur(4px);
@@ -158,12 +158,10 @@ const ShareButton = () => {
             display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
         }
         .share-btn-trigger:hover {
-            background: rgba(255, 255, 255, 0.2);
-            border-color: rgba(255, 255, 255, 0.5);
-            transform: scale(1.05);
+            background: rgba(255, 255, 255, 0.15);
+            border-color: rgba(255, 255, 255, 0.4);
         }
         .share-menu {
             position: absolute;
@@ -181,7 +179,6 @@ const ShareButton = () => {
             gap: 2px;
             animation: menuFadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
             overflow: hidden;
-            z-index: 10002;
         }
         @keyframes menuFadeIn {
             from { opacity: 0; transform: translateY(-10px) scale(0.95); }
@@ -273,7 +270,7 @@ const StunningBackground = ({ currentSlide }: { currentSlide: number }) => {
     let stars: Star[] = [];
 
     const initStars = (w: number, h: number) => {
-       // Keep density very low (sparse)
+       // Keep density very low (sparse) - reduced by half (60000 instead of 30000)
        const count = Math.floor((w * h) / 60000); 
        const newStars: Star[] = [];
        for(let i=0; i<count; i++){
@@ -343,9 +340,8 @@ const StunningBackground = ({ currentSlide }: { currentSlide: number }) => {
       curC2.b = lerp(curC2.b, targetC2.b, speed);
 
       // 3. Draw Audio-style Sine Waves
-      // Removed 'screen' composite operation for darker/subtler lines
-      ctx.globalCompositeOperation = 'source-over'; 
-      ctx.lineWidth = 1; 
+      ctx.globalCompositeOperation = 'screen'; 
+      ctx.lineWidth = 1; // Thinner lines
       
       const waveCount = 3; 
       const centerY = height / 2;
@@ -356,12 +352,11 @@ const StunningBackground = ({ currentSlide }: { currentSlide: number }) => {
         const g = lerp(curC1.g, curC2.g, mix);
         const b = lerp(curC1.b, curC2.b, mix);
         
-        // Remove glow shadow
-        ctx.shadowBlur = 0;
-        ctx.shadowColor = `rgba(0,0,0,0)`;
-        
-        // Darker lines: Reduced opacity to 0.05
-        ctx.strokeStyle = `rgba(${Math.round(r)},${Math.round(g)},${Math.round(b)}, 0.05)`;
+        // Reduced glow intensity
+        ctx.shadowBlur = 10;
+        ctx.shadowColor = `rgba(${Math.round(r)},${Math.round(g)},${Math.round(b)}, 0.3)`;
+        // Significantly reduced opacity for "background" feel
+        ctx.strokeStyle = `rgba(${Math.round(r)},${Math.round(g)},${Math.round(b)}, 0.15)`;
         
         ctx.beginPath();
         
@@ -382,6 +377,10 @@ const StunningBackground = ({ currentSlide }: { currentSlide: number }) => {
         ctx.stroke();
       }
       
+      // Reset context
+      ctx.shadowBlur = 0;
+      ctx.globalCompositeOperation = 'source-over';
+
       requestAnimationFrame(animate);
     };
 
@@ -515,6 +514,7 @@ const App = () => {
                 <span className="pill" style={{borderColor: '#333', background: 'rgba(0,0,0,0.4)', color: '#aaa'}}>Data Advantage</span>
               </div>
             </div>
+	          </div>
           </section>
 
         {/* SLIDE 2: PROBLEM */}
@@ -784,7 +784,6 @@ const App = () => {
                     src={teamData.itai.image} 
                     alt={teamData.itai.name} 
                     style={{width: '100%', height: '100%', objectFit: 'cover'}}
-                    onError={(e) => { e.currentTarget.style.display='none'; e.currentTarget.parentElement!.innerText = 'IA'; e.currentTarget.parentElement!.style.display='flex'; e.currentTarget.parentElement!.style.alignItems='center'; e.currentTarget.parentElement!.style.justifyContent='center'; e.currentTarget.parentElement!.style.fontSize='24px'; }}
                   />
                 </div>
                 <div>
@@ -803,7 +802,6 @@ const App = () => {
                      src={teamData.motti.image} 
                      alt={teamData.motti.name} 
                      style={{width: '100%', height: '100%', objectFit: 'cover'}}
-                     onError={(e) => { e.currentTarget.style.display='none'; e.currentTarget.parentElement!.innerText = 'MR'; e.currentTarget.parentElement!.style.display='flex'; e.currentTarget.parentElement!.style.alignItems='center'; e.currentTarget.parentElement!.style.justifyContent='center'; e.currentTarget.parentElement!.style.fontSize='24px'; }}
                    />
                 </div>
                 <div>
@@ -832,9 +830,9 @@ const App = () => {
           <TopBar title="TuneMe AI" />
           <div className="grow" style={{alignItems: 'center', justifyContent: 'center', textAlign: 'center', position: 'relative', zIndex: 10}}>
             
-            <div className="anim-target" style={{marginBottom: '30px'}}>
+            <div className="anim-target" style={{marginBottom: '60px'}}>
                <h1 style={{
-                 fontSize: 'clamp(50px, 10vw, 120px)', 
+                 fontSize: 'clamp(60px, 10vw, 150px)', 
                  lineHeight: '0.9', 
                  background: 'linear-gradient(135deg, #fff 20%, var(--accent-cyan) 100%)',
                  WebkitBackgroundClip: 'text',
@@ -847,30 +845,29 @@ const App = () => {
                     WebkitTextFillColor: 'transparent'
                  }}>Act.</span>
                </h1>
-               <p style={{margin: '20px auto 0', fontSize: '24px', color: '#fff', opacity: 0.8, maxWidth: '600px'}}>
+               <p style={{margin: '30px auto 0', fontSize: '24px', color: '#fff', opacity: 0.8, maxWidth: '600px'}}>
                  The world already has the sensors. <br/>TuneMe delivers the rest.
                </p>
             </div>
 
             <div className="anim-target contact-grid-mobile" style={{
-                display: 'flex',
-                flexWrap: 'wrap',
-                justifyContent: 'center',
+                display: 'grid',
+                gridTemplateColumns: '1fr 1fr',
                 gap: '20px',
                 width: '100%',
                 maxWidth: '600px'
             }}>
-                <div className="card" style={{flex: '1 1 200px', padding: '24px', display: 'flex', flexDirection: 'column', gap: '10px', alignItems: 'center', borderColor: 'var(--accent-purple)', background: 'rgba(112,0,255,0.1)'}}>
+                <div className="card" style={{padding: '30px', display: 'flex', flexDirection: 'column', gap: '10px', alignItems: 'center', borderColor: 'var(--accent-purple)', background: 'rgba(112,0,255,0.1)'}}>
                    <span className="tag" style={{justifyContent: 'center', color: '#fff'}}>Get in Touch</span>
                    <a href="mailto:itai@tuneme.io" style={{color: '#fff', textDecoration: 'none', fontSize: '20px', fontWeight: 'bold'}}>itai@tuneme.io</a>
                 </div>
-                <div className="card" style={{flex: '1 1 200px', padding: '24px', display: 'flex', flexDirection: 'column', gap: '10px', alignItems: 'center', borderColor: 'var(--accent-cyan)', background: 'rgba(0,240,255,0.1)'}}>
+                <div className="card" style={{padding: '30px', display: 'flex', flexDirection: 'column', gap: '10px', alignItems: 'center', borderColor: 'var(--accent-cyan)', background: 'rgba(0,240,255,0.1)'}}>
                    <span className="tag" style={{justifyContent: 'center', color: '#fff'}}>Visit Website</span>
                    <a href="https://tuneme.io" target="_blank" style={{color: '#fff', textDecoration: 'none', fontSize: '20px', fontWeight: 'bold'}}>tuneme.io</a>
                 </div>
             </div>
 
-            <div className="anim-target" style={{marginTop: '30px', opacity: 0.5, fontSize: '12px', letterSpacing: '0.1em'}}>
+            <div className="anim-target" style={{marginTop: '40px', opacity: 0.5, fontSize: '12px', letterSpacing: '0.1em'}}>
                TUNEME AI © 2026 • PROPRIETARY & CONFIDENTIAL
             </div>
 
@@ -882,11 +879,5 @@ const App = () => {
   );
 };
 
-// Check for root element availability and log error if missing
-const rootElement = document.getElementById('root');
-if (!rootElement) {
-    console.error("Failed to find the root element");
-} else {
-    const root = createRoot(rootElement);
-    root.render(<App />);
-}
+const root = createRoot(document.getElementById('root')!);
+root.render(<App />);
