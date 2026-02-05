@@ -62,6 +62,8 @@
             color: white;
             overflow: hidden;
             -webkit-font-smoothing: antialiased;
+            /* Prevents rubber-banding on iOS */
+            overscroll-behavior-y: none;
         }
         .slide-content::-webkit-scrollbar {
             width: 6px;
@@ -134,15 +136,15 @@
         );
 
         const TopBar = ({ title }) => (
-            <div className="flex justify-between items-center w-full mb-12 animate-[fadeInDown_0.6s_ease-out_forwards]">
-                <div className="flex items-center gap-2 text-[13px] tracking-[0.15em] uppercase text-muted font-medium">
+            <div className="flex justify-between items-center w-full mb-8 md:mb-12 animate-[fadeInDown_0.6s_ease-out_forwards] flex-shrink-0">
+                <div className="flex items-center gap-2 text-[11px] md:text-[13px] tracking-[0.15em] uppercase text-muted font-medium">
                     <span className="w-1.5 h-1.5 bg-cyan rounded-full shadow-[0_0_8px_#00f0ff]"></span> {title}
                 </div>
                 <div>
                     <img 
                         src="https://tuneme.io/images/logo.png" 
                         alt="TuneMe" 
-                        className="h-8 object-contain"
+                        className="h-6 md:h-8 object-contain"
                         onError={(e) => {
                             e.target.style.display = 'none';
                             e.target.parentNode.innerText = 'TuneMe';
@@ -153,7 +155,7 @@
         );
 
         const Card = ({ children, className = '' }) => (
-            <div className={`bg-[#0f0f16]/60 border border-white/10 rounded-2xl p-8 backdrop-blur-md shadow-lg ${className}`}>
+            <div className={`bg-[#0f0f16]/60 border border-white/10 rounded-2xl p-6 md:p-8 backdrop-blur-md shadow-lg ${className}`}>
                 {children}
             </div>
         );
@@ -166,13 +168,13 @@
 
         const StatBox = ({ value, label }) => (
             <div className="flex flex-col">
-                <span className="text-3xl md:text-4xl font-bold text-white/90 mb-1">{value}</span>
-                <span className="text-xs text-muted uppercase tracking-wide leading-tight">{label}</span>
+                <span className="text-2xl md:text-4xl font-bold text-white/90 mb-1">{value}</span>
+                <span className="text-[10px] md:text-xs text-muted uppercase tracking-wide leading-tight">{label}</span>
             </div>
         );
 
         const Pill = ({ children, className = '' }) => (
-            <span className={`px-3 py-1.5 rounded-full border border-white/10 text-[11px] uppercase tracking-widest text-muted bg-white/5 whitespace-nowrap ${className}`}>
+            <span className={`px-3 py-1.5 rounded-full border border-white/10 text-[10px] md:text-[11px] uppercase tracking-widest text-muted bg-white/5 whitespace-nowrap ${className}`}>
                 {children}
             </span>
         );
@@ -370,7 +372,7 @@
             ];
 
             return (
-                <div ref={menuRef} className="fixed top-[30px] right-[30px] z-[2000]">
+                <div ref={menuRef} className="fixed top-[24px] right-[24px] z-[2000]">
                     <button 
                         className="w-11 h-11 rounded-full border border-white/20 bg-white/5 text-white cursor-pointer backdrop-blur-sm transition-all duration-200 flex items-center justify-center hover:bg-white/15 hover:border-white/40"
                         onClick={() => setIsOpen(!isOpen)} 
@@ -464,7 +466,7 @@
                     className={`w-screen h-[100dvh] flex-shrink-0 overflow-y-auto overflow-x-hidden p-6 md:p-12 relative transition-opacity duration-500 ${index === currentSlide ? 'opacity-100 pointer-events-auto' : 'opacity-20 pointer-events-none'} ${className}`}
                     aria-hidden={index !== currentSlide}
                 >
-                    <div className="max-w-7xl mx-auto min-h-full flex flex-col slide-content pb-32 md:pb-20">
+                    <div className="max-w-7xl mx-auto min-h-full flex flex-col slide-content pb-36 md:pb-20">
                         {children}
                     </div>
                 </section>
@@ -480,9 +482,9 @@
                     <ShareButton />
 
                     {/* Navigation Controls */}
-                    <div className="fixed bottom-6 left-1/2 -translate-x-1/2 md:left-auto md:translate-x-0 md:right-6 z-50 flex gap-6 md:gap-3">
-                        <button className="w-14 h-14 md:w-11 md:h-11 rounded-full border border-white/20 bg-white/10 text-white text-xl md:text-lg flex items-center justify-center hover:bg-white/20 transition-colors backdrop-blur-md shadow-lg active:scale-95" onClick={prevSlide} aria-label="Previous Slide">←</button>
-                        <button className="w-14 h-14 md:w-11 md:h-11 rounded-full border border-white/20 bg-white/10 text-white text-xl md:text-lg flex items-center justify-center hover:bg-white/20 transition-colors backdrop-blur-md shadow-lg active:scale-95" onClick={nextSlide} aria-label="Next Slide">→</button>
+                    <div className="fixed bottom-8 left-1/2 -translate-x-1/2 md:left-auto md:translate-x-0 md:right-6 md:bottom-6 z-50 flex gap-8 md:gap-3">
+                        <button className="w-14 h-14 md:w-11 md:h-11 rounded-full border border-white/20 bg-white/10 text-white text-xl md:text-lg flex items-center justify-center hover:bg-white/20 transition-all backdrop-blur-md shadow-lg active:scale-95 active:bg-white/30" onClick={prevSlide} aria-label="Previous Slide">←</button>
+                        <button className="w-14 h-14 md:w-11 md:h-11 rounded-full border border-white/20 bg-white/10 text-white text-xl md:text-lg flex items-center justify-center hover:bg-white/20 transition-all backdrop-blur-md shadow-lg active:scale-95 active:bg-white/30" onClick={nextSlide} aria-label="Next Slide">→</button>
                     </div>
 
                     {/* Deck Container */}
