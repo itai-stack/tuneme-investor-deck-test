@@ -11,7 +11,11 @@
     <!-- Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     
-    <!-- Babel for TSX/JSX support in browser -->
+    <!-- React & ReactDOM (UMD for browser) -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    
+    <!-- Babel for JSX compilation in browser -->
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
     <script>
@@ -92,35 +96,1046 @@
         .slide-content::-webkit-scrollbar-thumb:hover {
             background: rgba(255, 255, 255, 0.4);
         }
-        /* Custom Gradient Text Utilities */
         .text-gradient-cyan {
             background: linear-gradient(135deg, #fff 0%, #00f0ff 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
-        .glass-card {
-            background: rgba(15, 15, 22, 0.6);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
-        }
     </style>
-    <script type="importmap">
-    {
-      "imports": {
-        "react": "https://esm.sh/react@18.2.0",
-        "react-dom/client": "https://esm.sh/react-dom@18.2.0/client",
-        "react-dom/": "https://esm.sh/react-dom@18.2.0/",
-        "react/": "https://esm.sh/react@18.2.0/"
-      }
-    }
-    </script>
 <link rel="stylesheet" href="/index.css">
 </head>
 <body>
     <div id="root"></div>
-    <script type="text/babel" data-type="module" src="./index.tsx"></script>
+
+    <script type="text/babel" data-presets="env,react">
+        const { useState, useEffect, useRef, useMemo } = React;
+
+        // --- CONSTANTS ---
+        const PALETTES = [
+            ['#00f0ff', '#7000ff'], // 0: Title
+            ['#ff0055', '#7a0026'], // 1: Problem
+            ['#00ff9d', '#00b8ff'], // 2: Voice
+            ['#8c00ff', '#ff00d4'], // 3: Product
+            ['#4a00e0', '#8e2de2'], // 4: The Loop
+            ['#ffcc00', '#ff6600'], // 5: Validation
+            ['#00ffd5', '#2a52be'], // 6: Traction
+            ['#00b09b', '#96c93d'], // 7: Market
+            ['#3a4b99', '#7a8fd9'], // 8: Strategy
+            ['#ff9a9e', '#fecfef'], // 9: Team
+            ['#ffffff', '#00f0ff'], // 10: Contact
+        ];
+        
+        const TEAM_DATA = {
+            itai: {
+            name: "Itai Argaman",
+            role: "CEO & CO-FOUNDER",
+            image: "https://lh3.googleusercontent.com/d/1gxArPetBgtslObGzLnBBMgRDPbfM_Gwx",
+            bio: "Audio technology & commercialization. Former Waves Audio. Collaboration with Google and Meta on audio-based consumer products."
+            },
+            motti: {
+            name: "Motti Ratmansky, MD",
+            role: "CMO & CO-FOUNDER",
+            image: "https://lh3.googleusercontent.com/d/1q0mA0l6ufa6tw5IKGA5qAr3OBDEPgRqC",
+            bio: "Pain management & rehabilitation specialist. Leads clinical validation."
+            }
+        };
+
+        // --- UI COMPONENTS ---
+
+        const GlowOrb = ({ color, highIntensity = false }) => (
+            <div 
+                className="absolute -top-[10vw] -left-[10vw] w-[50vw] h-[50vw] rounded-full pointer-events-none mix-blend-screen transition-opacity duration-1000 ease-in-out"
+                style={{
+                background: `radial-gradient(circle, ${color} 0%, transparent 70%)`,
+                opacity: highIntensity ? 0.15 : 0.05
+                }}
+            />
+        );
+
+        const TopBar = ({ title }) => (
+            <div className="flex justify-between items-center w-full mb-12 animate-[fadeInDown_0.6s_ease-out_forwards]">
+                <div className="flex items-center gap-2 text-[13px] tracking-[0.15em] uppercase text-muted font-medium">
+                    <span className="w-1.5 h-1.5 bg-cyan rounded-full shadow-[0_0_8px_#00f0ff]"></span> {title}
+                </div>
+                <div>
+                    <img 
+                        src="https://tuneme.io/images/logo.png" 
+                        alt="TuneMe" 
+                        className="h-8 object-contain"
+                        onError={(e) => {
+                            e.target.style.display = 'none';
+                            if (e.target.parentNode) e.target.parentNode.innerText = 'TuneMe';
+                        }}
+                    />
+                </div>
+            </div>
+        );
+
+        const Card = ({ children, className = '' }) => (
+            <div className={`bg-[#0f0f16]/60 border border-white/10 rounded-2xl p-8 backdrop-blur-md shadow-lg ${className}`}>
+                {children}
+            </div>
+        );
+
+        const Tag = ({ children, className = '', color = 'text-muted' }) => (
+            <div className={`inline-flex items-center text-[10px] tracking-wider uppercase font-semibold mb-3 ${color} ${className}`}>
+                {children}
+            </div>
+        );
+
+        const StatBox = ({ value, label }) => (
+            <div className="flex flex-col">
+                <span className="text-3xl md:text-4xl font-bold text-white/90 mb-1">{value}</span>
+                <span className="text-xs text-muted uppercase tracking-wide leading-tight">{label}</span>
+            </div>
+        );
+
+        const Pill = ({ children, className = '' }) => (
+            <span className={`px-3 py-1.5 rounded-full border border-white/10 text-[11px] uppercase tracking-widest text-muted bg-white/5 whitespace-nowrap ${className}`}>
+                {children}
+            </span>
+        );
+
+        // --- BACKGROUND COMPONENT ---
+        const Background = ({ currentSlide }) => {
+            const canvasRef = useRef(null);
+            const slideRef = useRef(currentSlide);
+
+            const hexToRgb = (hex) => {
+                if (!hex) return { r: 0, g: 0, b: 0 };
+                const bigint = parseInt(hex.slice(1), 16);
+                return { r: (bigint >> 16) & 255, g: (bigint >> 8) & 255, b: bigint & 255 };
+            };
+
+            const lerp = (start, end, t) => start + (end - start) * t;
+
+            useEffect(() => {
+                slideRef.current = currentSlide;
+            }, [currentSlide]);
+
+            useEffect(() => {
+                const canvas = canvasRef.current;
+                if (!canvas) return;
+                const ctx = canvas.getContext('2d');
+                if (!ctx) return;
+
+                let width = canvas.width = window.innerWidth;
+                let height = canvas.height = window.innerHeight;
+
+                let time = 0;
+                
+                let curC1 = hexToRgb(PALETTES[0][0]);
+                let curC2 = hexToRgb(PALETTES[0][1]);
+
+                const resize = () => {
+                width = canvas.width = window.innerWidth;
+                height = canvas.height = window.innerHeight;
+                };
+                window.addEventListener('resize', resize);
+
+                let animId;
+
+                const animate = () => {
+                ctx.fillStyle = '#050510';
+                ctx.fillRect(0, 0, width, height);
+
+                time += 0.0075; 
+
+                const targetIndex = slideRef.current < PALETTES.length ? slideRef.current : 0;
+                const targetC1 = hexToRgb(PALETTES[targetIndex][0]);
+                const targetC2 = hexToRgb(PALETTES[targetIndex][1]);
+                const speed = 0.05;
+
+                curC1.r = lerp(curC1.r, targetC1.r, speed);
+                curC1.g = lerp(curC1.g, targetC1.g, speed);
+                curC1.b = lerp(curC1.b, targetC1.b, speed);
+                
+                curC2.r = lerp(curC2.r, targetC2.r, speed);
+                curC2.g = lerp(curC2.g, targetC2.g, speed);
+                curC2.b = lerp(curC2.b, targetC2.b, speed);
+
+                ctx.globalCompositeOperation = 'screen'; 
+                ctx.lineWidth = 1;
+                
+                const waveCount = 3; 
+                const centerY = height / 2;
+                
+                for (let i = 0; i < waveCount; i++) {
+                    const mix = i / (waveCount > 1 ? waveCount - 1 : 1);
+                    const r = lerp(curC1.r, curC2.r, mix);
+                    const g = lerp(curC1.g, curC2.g, mix);
+                    const b = lerp(curC1.b, curC2.b, mix);
+                    
+                    ctx.shadowBlur = 10;
+                    ctx.shadowColor = `rgba(${Math.round(r)},${Math.round(g)},${Math.round(b)}, 0.3)`;
+                    ctx.strokeStyle = `rgba(${Math.round(r)},${Math.round(g)},${Math.round(b)}, 0.15)`;
+                    
+                    ctx.beginPath();
+                    
+                    const frequency = 0.002 + (i * 0.001);
+                    const phase = time * (1 + i * 0.2);
+                    const amplitude = height * 0.15; 
+
+                    for (let x = 0; x <= width; x += 10) {
+                        const y = centerY 
+                            + Math.sin(x * frequency + phase) * amplitude
+                            + Math.sin(x * frequency * 2.0 + phase * 1.3) * (amplitude * 0.4);
+                        
+                        if (x === 0) ctx.moveTo(x, y);
+                        else ctx.lineTo(x, y);
+                    }
+                    ctx.stroke();
+                }
+                
+                ctx.shadowBlur = 0;
+                ctx.globalCompositeOperation = 'source-over';
+
+                animId = requestAnimationFrame(animate);
+                };
+
+                animId = requestAnimationFrame(animate);
+
+                return () => {
+                window.removeEventListener('resize', resize);
+                cancelAnimationFrame(animId);
+                };
+            }, []);
+
+            return (
+                <canvas ref={canvasRef} className="fixed top-0 left-0 w-full h-full pointer-events-none z-0" />
+            );
+        };
+
+        // --- SHARE BUTTON ---
+        const ShareButton = () => {
+            const [isOpen, setIsOpen] = useState(false);
+            const [copied, setCopied] = useState(false);
+            const menuRef = useRef(null);
+
+            const url = window.location.href;
+            const text = "10 seconds of voice → physiology.";
+
+            useEffect(() => {
+                const handleClickOutside = (event) => {
+                if (menuRef.current && !menuRef.current.contains(event.target)) {
+                    setIsOpen(false);
+                }
+                };
+                if (isOpen) {
+                document.addEventListener('mousedown', handleClickOutside);
+                }
+                return () => document.removeEventListener('mousedown', handleClickOutside);
+            }, [isOpen]);
+
+            const handleCopy = async (e) => {
+                e.stopPropagation();
+                try {
+                await navigator.clipboard.writeText(url);
+                setCopied(true);
+                setTimeout(() => setCopied(false), 2000);
+                } catch (err) {
+                console.error('Failed to copy', err);
+                }
+            };
+            
+            const handleNativeShare = async () => {
+                const shareData = {
+                title: 'TuneMe',
+                text: text,
+                url: url,
+                };
+                if (navigator.share) {
+                    try {
+                        await navigator.share(shareData);
+                        setIsOpen(false);
+                    } catch(e) {}
+                }
+            };
+
+            const options = [
+                { name: 'WhatsApp', icon: 'M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z', href: `https://wa.me/?text=${encodeURIComponent(text + ' ' + url)}` },
+                { name: 'Email', icon: 'M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z M22 6l-10 7L2 6', stroke: true, href: `mailto:?subject=${encodeURIComponent("TuneMe")}&body=${encodeURIComponent(text + '\n' + url)}` },
+                { name: 'LinkedIn', icon: 'M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z', href: `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}` },
+                { name: 'X / Twitter', icon: 'M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z', href: `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}` },
+            ];
+
+            return (
+                <div ref={menuRef} className="fixed top-[30px] right-[30px] z-[2000]">
+                <button 
+                    className="w-11 h-11 rounded-full border border-white/20 bg-white/5 text-white cursor-pointer backdrop-blur-sm transition-all duration-200 flex items-center justify-center hover:bg-white/15 hover:border-white/40"
+                    onClick={() => setIsOpen(!isOpen)} 
+                    aria-label="Share Menu"
+                >
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
+                </button>
+
+                {isOpen && (
+                    <div className="absolute top-[55px] right-0 w-[220px] bg-[#0f0f19]/95 border border-white/15 rounded-2xl backdrop-blur-xl p-2 shadow-[0_15px_50px_rgba(0,0,0,0.6)] flex flex-col gap-[2px] overflow-hidden animate-[fade-in_0.2s_ease-out]">
+                        {typeof navigator !== 'undefined' && navigator.share && (
+                            <button className="flex items-center gap-3 px-3.5 py-2.5 rounded-[10px] text-[#e0e0e0] transition-colors duration-200 bg-transparent border-none cursor-pointer w-full text-left font-inherit text-sm hover:bg-white/10 hover:text-white active:scale-98" onClick={handleNativeShare}>
+                                <span className="flex items-center justify-center text-[#00ff9d] w-5 h-5"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"></path><polyline points="16 6 12 2 8 6"></polyline><line x1="12" y1="2" x2="12" y2="15"></line></svg></span>
+                                <span className="flex-grow font-medium">Share via...</span>
+                            </button>
+                        )}
+                        
+                        {options.map(opt => (
+                            <a key={opt.name} href={opt.href} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 px-3.5 py-2.5 rounded-[10px] text-[#e0e0e0] transition-colors duration-200 bg-transparent border-none cursor-pointer w-full text-left font-inherit text-sm hover:bg-white/10 hover:text-white active:scale-98" onClick={() => setIsOpen(false)}>
+                                <span className="flex items-center justify-center text-[#00ff9d] w-5 h-5">
+                                    <svg viewBox="0 0 24 24" width="18" height="18" fill={opt.stroke ? "none" : "currentColor"} stroke={opt.stroke ? "currentColor" : "none"} strokeWidth={opt.stroke ? "2" : "0"}>
+                                        <path d={opt.icon} />
+                                        {opt.name === 'Email' && <polyline points="22,6 12,13 2,6" />}
+                                    </svg>
+                                </span>
+                                <span className="flex-grow font-medium">{opt.name}</span>
+                            </a>
+                        ))}
+                        
+                        <div className="h-px bg-white/10 mx-1.5 my-1" />
+                        
+                        <button className="flex items-center gap-3 px-3.5 py-2.5 rounded-[10px] text-[#e0e0e0] transition-colors duration-200 bg-transparent border-none cursor-pointer w-full text-left font-inherit text-sm hover:bg-white/10 hover:text-white active:scale-98" onClick={handleCopy}>
+                            <span className="flex items-center justify-center text-[#00ff9d] w-5 h-5">
+                            {copied ? 
+                                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="20 6 9 17 4 12"></polyline></svg> : 
+                                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                            }
+                            </span>
+                            <span className="flex-grow font-medium">{copied ? 'Copied' : 'Copy Link'}</span>
+                        </button>
+                    </div>
+                )}
+                </div>
+            );
+        };
+
+        // --- ANIMATED COUNTER ---
+        const CountUp = ({ value, isActive }) => {
+            const [displayValue, setDisplayValue] = useState(0);
+            
+            const parseValue = useMemo(() => {
+                const match = value.match(/([^\d\.]*)([\d\.]+)(.*)/);
+                if (match) {
+                    return {
+                        prefix: match[1],
+                        num: parseFloat(match[2]),
+                        suffix: match[3],
+                        isFloat: match[2].includes('.')
+                    };
+                }
+                return { prefix: '', num: 0, suffix: value, isFloat: false };
+            }, [value]);
+
+            useEffect(() => {
+                if (!isActive) {
+                    setDisplayValue(0);
+                    return;
+                }
+
+                let start = 0;
+                const end = parseValue.num;
+                const duration = 1600; 
+                let startTime = null;
+
+                const animate = (currentTime) => {
+                    if (!startTime) startTime = currentTime;
+                    const progress = Math.min((currentTime - startTime) / duration, 1);
+                    const ease = 1 - Math.pow(1 - progress, 4);
+                    setDisplayValue(start + (end - start) * ease);
+
+                    if (progress < 1) {
+                        requestAnimationFrame(animate);
+                    }
+                };
+                requestAnimationFrame(animate);
+            }, [isActive, parseValue.num]);
+
+            const formattedNumber = parseValue.isFloat 
+                ? displayValue.toFixed(1) 
+                : Math.floor(displayValue);
+
+            return (
+                <span>{parseValue.prefix}{formattedNumber}{parseValue.suffix}</span>
+            );
+        };
+
+        const AnimatedStatBox = ({ value, label, isActive }) => (
+            <div className="flex flex-col">
+                <span className="text-3xl md:text-4xl font-bold text-white/90 mb-1">
+                    <CountUp value={value} isActive={isActive} />
+                </span>
+                <span className="text-xs text-muted uppercase tracking-wide leading-tight">{label}</span>
+            </div>
+        );
+
+        // --- VISUALIZATIONS ---
+
+        const AbstractLayerVisual = () => {
+            return (
+                <div className="flex flex-col gap-3 w-full max-w-sm relative">
+                    <div className="absolute -left-6 top-0 bottom-0 w-1 bg-gradient-to-b from-purple to-cyan rounded-full opacity-50" />
+                    {[1, 2, 3, 4].map((layer) => (
+                        <div key={layer} className="relative overflow-hidden h-12 bg-white/5 border border-white/10 rounded-lg flex items-center px-4 group hover:bg-white/10 transition-all duration-300">
+                                <div className="absolute inset-0 opacity-20 flex items-center">
+                                <div className="w-[200%] h-full flex animate-wave" style={{ animationDuration: `${3 + layer}s` }}>
+                                    <svg viewBox="0 0 100 20" className="w-1/2 h-full preserve-3d" preserveAspectRatio="none">
+                                        <path d="M0 10 Q 25 20 50 10 T 100 10 V 20 H 0 Z" fill={`rgba(${100 + layer * 30}, ${255 - layer * 40}, 255, 0.5)`} />
+                                    </svg>
+                                    <svg viewBox="0 0 100 20" className="w-1/2 h-full preserve-3d" preserveAspectRatio="none">
+                                        <path d="M0 10 Q 25 20 50 10 T 100 10 V 20 H 0 Z" fill={`rgba(${100 + layer * 30}, ${255 - layer * 40}, 255, 0.5)`} />
+                                    </svg>
+                                </div>
+                            </div>
+                            
+                            <div className="z-10 flex justify-between w-full items-center">
+                                <span className="text-xs font-bold tracking-widest uppercase">Adaptive Layer 0{layer}</span>
+                                <div className="w-1.5 h-1.5 rounded-full bg-cyan animate-pulse" style={{ animationDelay: `${layer * 0.5}s`}} />
+                            </div>
+                        </div>
+                    ))}
+                    <div className="mt-2 text-xs text-muted text-center italic">
+                        Real-time composite generation based on biomarkers
+                    </div>
+                </div>
+            );
+        };
+
+        // FIXED ANS BALANCE VISUAL
+        const AnsBalanceVisual = () => {
+            return (
+                <div className="bg-black/20 rounded-2xl p-6 border border-white/5 flex flex-col items-center w-full">
+                    <div className="flex justify-between w-full mb-4">
+                        <div className="text-center">
+                            <div className="text-accent-pink font-bold text-sm mb-1">SYMPATHETIC</div>
+                            <div className="text-[10px] text-muted uppercase">Fight or Flight</div>
+                        </div>
+                        <div className="text-center">
+                            <div className="text-cyan font-bold text-sm mb-1">PARASYMPATHETIC</div>
+                            <div className="text-[10px] text-muted uppercase">Rest and Digest</div>
+                        </div>
+                    </div>
+                    
+                    {/* Increased Height Container (h-40) to prevent overlap */}
+                    <div className="w-full h-40 flex items-center justify-center relative">
+                            <svg className="w-full h-full" viewBox="0 0 400 160" preserveAspectRatio="none">
+                                <defs>
+                                <linearGradient id="stressToCalm" x1="0%" y1="0%" x2="100%" y2="0%">
+                                    <stop offset="0%" style={{stopColor:'#ff0055', stopOpacity:1}} />
+                                    <stop offset="50%" style={{stopColor:'#7000ff', stopOpacity:1}} />
+                                    <stop offset="100%" style={{stopColor:'#00f0ff', stopOpacity:1}} />
+                                </linearGradient>
+                                </defs>
+                                {/* Adjusted Path to be centered within larger viewbox */}
+                                <path d="M0,80 
+                                        Q10,40 20,80 T40,80 T60,80 T80,80 
+                                        Q100,120 120,80 T160,80 
+                                        C200,80 220,40 260,80 
+                                        S350,120 400,80" 
+                                    fill="none" stroke="url(#stressToCalm)" strokeWidth="3" strokeLinecap="round" />
+                                
+                                <circle r="4" fill="white" className="animate-[flow_4s_ease-in-out_infinite]">
+                                <animateMotion dur="4s" repeatCount="indefinite"
+                                    path="M0,80 Q10,40 20,80 T40,80 T60,80 T80,80 Q100,120 120,80 T160,80 C200,80 220,40 260,80 S350,120 400,80" />
+                                </circle>
+                            </svg>
+                    </div>
+                    
+                    {/* Explicit large margin top */}
+                    <div className="mt-8">
+                        <div className="bg-[#0f0f16] px-5 py-2 rounded-full border border-purple/50 text-[10px] font-bold text-purple shadow-[0_0_15px_rgba(112,0,255,0.5)] tracking-wider uppercase">
+                            Vagus Nerve Stimulation
+                        </div>
+                    </div>
+                </div>
+            )
+        }
+
+        const FeedbackLoopGraphic = () => {
+            return (
+                <div className="relative w-full aspect-[4/3] md:aspect-[2/1] flex items-center justify-center">
+                    <svg className="absolute inset-0 w-full h-full pointer-events-none opacity-30">
+                        <path d="M 20% 50% Q 50% 10% 80% 50%" fill="none" stroke="url(#grad1)" strokeWidth="2" strokeDasharray="5,5" className="animate-[pulse_3s_infinite]" />
+                        <path d="M 80% 50% Q 50% 90% 20% 50%" fill="none" stroke="url(#grad1)" strokeWidth="2" strokeDasharray="5,5" className="animate-[pulse_3s_infinite]" />
+                        <defs>
+                            <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="0%">
+                                <stop offset="0%" style={{stopColor:'#00f0ff', stopOpacity:1}} />
+                                <stop offset="100%" style={{stopColor:'#7000ff', stopOpacity:1}} />
+                            </linearGradient>
+                        </defs>
+                    </svg>
+
+                    <div className="grid grid-cols-3 gap-4 w-full h-full items-center justify-items-center relative z-10">
+                        <div className="flex flex-col items-center text-center gap-2">
+                            <div className="w-14 h-14 md:w-16 md:h-16 rounded-full bg-[#0f0f16] border border-cyan/50 flex items-center justify-center shadow-[0_0_20px_rgba(0,240,255,0.2)]">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#00f0ff" strokeWidth="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></svg>
+                            </div>
+                            <div className="text-xs md:text-sm font-bold">1. Voice Input</div>
+                        </div>
+
+                        <div className="flex flex-col items-center text-center gap-2">
+                            <div className="w-16 h-16 md:w-20 md:h-20 rounded-xl bg-purple/10 border border-purple/50 flex items-center justify-center shadow-[0_0_30px_rgba(112,0,255,0.3)] animate-pulse">
+                                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#7000ff" strokeWidth="2"><rect x="4" y="4" width="16" height="16" rx="2" ry="2"></rect><rect x="9" y="9" width="6" height="6"></rect><line x1="9" y1="1" x2="9" y2="4"></line><line x1="15" y1="1" x2="15" y2="4"></line><line x1="9" y1="20" x2="9" y2="23"></line><line x1="15" y1="20" x2="15" y2="23"></line><line x1="20" y1="9" x2="23" y2="9"></line><line x1="20" y1="14" x2="23" y2="14"></line><line x1="1" y1="9" x2="4" y2="9"></line><line x1="1" y1="14" x2="4" y2="14"></line></svg>
+                            </div>
+                            <div className="text-xs md:text-sm font-bold">2. Analysis</div>
+                            <div className="text-[9px] text-muted">Biomarkers Detected</div>
+                        </div>
+
+                        <div className="flex flex-col items-center text-center gap-2">
+                            <div className="w-14 h-14 md:w-16 md:h-16 rounded-full bg-[#0f0f16] border border-accent-pink/50 flex items-center justify-center shadow-[0_0_20px_rgba(255,0,85,0.2)]">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ff0055" strokeWidth="2"><path d="M3 18v-6a9 9 0 0 1 18 0v6"></path><path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"></path></svg>
+                            </div>
+                            <div className="text-xs md:text-sm font-bold">3. Therapy</div>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        // --- APP MAIN ---
+        const App = () => {
+        const [currentSlide, setCurrentSlide] = useState(0);
+        const totalSlides = 11;
+
+        const nextSlide = () => setCurrentSlide(prev => Math.min(prev + 1, totalSlides - 1));
+        const prevSlide = () => setCurrentSlide(prev => Math.max(prev - 1, 0));
+
+        useEffect(() => {
+            const handleKeyDown = (e) => {
+            if (e.key === 'ArrowRight' || e.key === ' ') nextSlide();
+            if (e.key === 'ArrowLeft') prevSlide();
+            };
+            window.addEventListener('keydown', handleKeyDown);
+            return () => window.removeEventListener('keydown', handleKeyDown);
+        }, []);
+
+        const touchStart = useRef(null);
+
+        const onTouchStart = (e) => {
+            touchStart.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+        };
+
+        const onTouchEnd = (e) => {
+            if (!touchStart.current) return;
+            
+            const touchEndX = e.changedTouches[0].clientX;
+            const touchEndY = e.changedTouches[0].clientY;
+            
+            const diffX = touchStart.current.x - touchEndX;
+            const diffY = touchStart.current.y - touchEndY;
+
+            if (Math.abs(diffX) > 50 && Math.abs(diffX) > Math.abs(diffY)) {
+            if (diffX > 0) nextSlide();
+            else prevSlide();
+            }
+            
+            touchStart.current = null;
+        };
+
+        const SlideSection = ({ index, children, className = '' }) => (
+            <section 
+                className={`w-screen h-[100dvh] flex-shrink-0 overflow-y-auto overflow-x-hidden p-6 md:p-12 relative transition-opacity duration-500 ${index === currentSlide ? 'opacity-100 pointer-events-auto' : 'opacity-20 pointer-events-none'} ${className}`}
+                aria-hidden={index !== currentSlide}
+            >
+                <div className="max-w-7xl mx-auto min-h-full flex flex-col slide-content pb-32 md:pb-20 relative z-10">
+                    {children}
+                </div>
+            </section>
+        );
+
+        return (
+            <div className="fixed inset-0 overflow-hidden font-sans text-white bg-bg selection:bg-cyan/30 h-[100dvh]">
+            <Background currentSlide={currentSlide} />
+            
+            <div className="fixed top-0 left-0 h-1 bg-cyan z-50 transition-[width] duration-300 ease-out" style={{ width: `${((currentSlide + 1) / totalSlides) * 100}%` }}></div>
+
+            <ShareButton />
+
+            <div className="fixed bottom-6 left-1/2 -translate-x-1/2 md:left-auto md:translate-x-0 md:right-6 z-50 flex gap-6 md:gap-3">
+                <button className="w-14 h-14 md:w-11 md:h-11 rounded-full border border-white/20 bg-white/10 text-white text-xl md:text-lg flex items-center justify-center hover:bg-white/20 transition-colors backdrop-blur-md shadow-lg active:scale-95" onClick={prevSlide} aria-label="Previous Slide">←</button>
+                <button className="w-14 h-14 md:w-11 md:h-11 rounded-full border border-white/20 bg-white/10 text-white text-xl md:text-lg flex items-center justify-center hover:bg-white/20 transition-colors backdrop-blur-md shadow-lg active:scale-95" onClick={nextSlide} aria-label="Next Slide">→</button>
+            </div>
+
+            <div 
+                className="flex h-full w-full transition-transform duration-700 cubic-bezier(0.16, 1, 0.3, 1)" 
+                style={{ transform: `translateX(-${currentSlide * 100}vw)` }}
+                onTouchStart={onTouchStart}
+                onTouchEnd={onTouchEnd}
+            >
+                
+                {/* SLIDE 0: TITLE */}
+                <SlideSection index={0}>
+                <GlowOrb color={PALETTES[0][0]} highIntensity={true} />
+                <TopBar title="Biomarker Engine" />
+                <div className="flex-grow flex flex-col items-center justify-center text-center">
+                    <div className="w-full max-w-4xl animate-[fadeInUp_0.6s_ease-out_0.2s_both]">
+                    <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold mb-6 tracking-tight">
+                        10 seconds of voice <br/>
+                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan to-purple">→ physiology.</span>
+                    </h1>
+                    <p className="text-lg md:text-xl text-[#d0d0e0] max-w-2xl mx-auto mb-24 md:mb-16 leading-relaxed font-light">
+                        TuneMe converts a short voice sample into a real-time signal of <b>stress</b> and <b>autonomic balance</b>, and delivers a personalized therapeutic response.
+                    </p>
+                    
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 w-full">
+                        {[
+                            ['10s', 'Voice Check-in'],
+                            ['Real-time', 'Analysis'],
+                            ['No HW', 'Required'],
+                            ['Closed-loop', 'Learning']
+                        ].map(([val, label], i) => (
+                            <div key={i} className="bg-gradient-to-b from-[#141428]/80 to-[#0a0a14]/90 border border-[#323250]/50 rounded-xl p-5 shadow-inner">
+                                <div className="text-2xl font-bold text-white mb-1">{val}</div>
+                                <div className="text-[10px] text-muted uppercase tracking-wider">{label}</div>
+                            </div>
+                        ))}
+                    </div>
+
+                    <div className="flex flex-wrap justify-center gap-3 mt-8">
+                        {['Voice Biomarkers', 'Physiology', 'Adaptive Therapy', 'Data Advantage'].map((tag, i) => (
+                            <span key={i} className="px-3 py-1 rounded-full border border-white/20 bg-black/20 text-muted text-xs uppercase tracking-wider">{tag}</span>
+                        ))}
+                    </div>
+                    </div>
+                </div>
+                </SlideSection>
+
+                {/* SLIDE 1: PROBLEM */}
+                <SlideSection index={1}>
+                <GlowOrb color={PALETTES[1][0]} />
+                <TopBar title="The Problem" />
+                <div className="flex-grow flex flex-col justify-center">
+                    <div className="animate-[fadeInUp_0.6s_ease-out_0.1s_both] mb-12">
+                    <h2 className="text-3xl md:text-5xl font-bold mb-4">Wearables measure. <span className="text-accent-pink">They don’t fix.</span></h2>
+                    <p className="text-lg text-gray-300 max-w-3xl">Hundreds of millions track sleep & stress daily, but most platforms stop at insights. The missing layer is <b>real-time action</b>.</p>
+                    </div>
+                    
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 w-full animate-[fadeInUp_0.6s_ease-out_0.3s_both]">
+                    <Card className="flex flex-col justify-between min-h-[300px]">
+                        <div>
+                        <h3 className="text-xl font-bold mb-2 text-white">The real pain</h3>
+                        <p className="text-sm text-muted mb-8">The problem is not awareness. It is overload. Too many sensors, too much data, and still no action.</p>
+                        </div>
+                        <div className="grid grid-cols-2 gap-y-8 gap-x-4">
+                        <AnimatedStatBox value="+30%" label="Increase in wearable ownership" isActive={currentSlide === 1} />
+                        <AnimatedStatBox value="80%" label="Of users do not act on insights" isActive={currentSlide === 1} />
+                        <AnimatedStatBox value="1.5B" label="People suffer chronic stress" isActive={currentSlide === 1} />
+                        <AnimatedStatBox value="$1T" label="Lost productivity per year" isActive={currentSlide === 1} />
+                        </div>
+                    </Card>
+
+                    <Card className="flex flex-col justify-center items-start border-accent-pink/20 bg-accent-pink/5">
+                        <h3 className="text-2xl font-bold mb-4 leading-tight">The unlock: <span className="text-cyan">HRV validates outcomes.</span> <br/>Voice drives action.</h3>
+                        <p className="text-muted text-sm leading-relaxed max-w-md">Measure the baseline (T0), apply therapy, then confirm a measurable physiological change (T1).</p>
+                    </Card>
+                    </div>
+                </div>
+                </SlideSection>
+
+                {/* SLIDE 2: WHY VOICE */}
+                <SlideSection index={2}>
+                <GlowOrb color={PALETTES[2][0]} />
+                <TopBar title="Why Voice" />
+                <div className="flex-grow flex flex-col justify-center items-center">
+                    <div className="text-center mb-12 animate-[fadeInUp_0.6s_ease-out_0.1s_both]">
+                    <h2 className="text-3xl md:text-5xl font-bold mb-4">Voice is a high-resolution physiological signal</h2>
+                    <p className="text-lg text-gray-300">It delivers continuous insight without hardware or friction.</p>
+                    </div>
+                    
+                    <div className="flex flex-col gap-5 w-full max-w-3xl animate-[fadeInUp_0.6s_ease-out_0.3s_both]">
+                    {[
+                        { tag: 'UNIVERSAL', title: 'Any smart device with a microphone', desc: 'Smartphones, laptops, tablets, wearables, and smart speakers. No extra hardware.' },
+                        { tag: 'INSTANT', title: 'Seconds-to-signal', desc: 'Fast physiological analysis.' },
+                        { tag: 'CONTINUOUS', title: 'Daily check-ins build a data advantage', desc: 'Outcome-linked voice data at scale is extremely hard to replicate.' }
+                    ].map((item, i) => (
+                        <Card key={i} className="flex flex-col items-center text-center py-8 hover:bg-white/5 transition-colors">
+                            <Tag className="bg-white/5 px-3 py-1 rounded-full">{item.tag}</Tag>
+                            <h3 className="text-2xl font-bold mb-2">{item.title}</h3>
+                            <p className="text-muted">{item.desc}</p>
+                        </Card>
+                    ))}
+                    </div>
+                </div>
+                </SlideSection>
+
+                {/* SLIDE 3: PRODUCT */}
+                <SlideSection index={3}>
+                <GlowOrb color={PALETTES[3][0]} />
+                <TopBar title="Product" />
+                <div className="flex-grow flex flex-col items-center justify-center">
+                    <div className="text-center mb-16 animate-[fadeInUp_0.6s_ease-out_0.1s_both]">
+                    <h2 className="text-3xl md:text-5xl font-bold mb-4">One Engine. <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple to-pink-500">Multiple Surfaces.</span></h2>
+                    <p className="text-gray-300">We are not just an app. We are the intelligence layer for digital health.</p>
+                    </div>
+
+                    <div className="flex flex-col md:flex-row items-center gap-4 w-full max-w-5xl mb-36 md:mb-16 animate-[fadeInUp_0.6s_ease-out_0.3s_both]">
+                    <div className="flex-1 bg-white/5 border border-white/10 rounded-xl p-6 text-center w-full">
+                        <Tag>Input</Tag>
+                        <h3 className="text-xl font-bold mb-1">Voice</h3>
+                        <p className="text-sm text-muted mb-2">10-second sample</p>
+                        <p className="text-xs opacity-50">Captures autonomic nervous system markers</p>
+                    </div>
+                    <div className="text-2xl text-muted rotate-90 md:rotate-0">→</div>
+                    <div className="flex-1 bg-purple/10 border border-purple/40 shadow-[0_0_30px_rgba(112,0,255,0.15)] rounded-xl p-6 text-center w-full transform md:-translate-y-4">
+                        <Tag color="text-purple">Core</Tag>
+                        <h3 className="text-xl font-bold mb-1">AI Biomarkers</h3>
+                        <p className="text-sm text-muted mb-2">Stress • Autonomic Balance</p>
+                        <p className="text-xs opacity-50">Physiology-driven state detection</p>
+                    </div>
+                    <div className="text-2xl text-muted rotate-90 md:rotate-0">→</div>
+                    <div className="flex-1 bg-white/5 border border-white/10 rounded-xl p-6 text-center w-full">
+                        <Tag>Output</Tag>
+                        <h3 className="text-xl font-bold mb-1">Action</h3>
+                        <p className="text-sm text-muted mb-2">Personalized Therapy / API</p>
+                        <p className="text-xs opacity-50">Non-invasive vagus nerve stimulation</p>
+                    </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full max-w-5xl animate-[fadeInUp_0.6s_ease-out_0.5s_both]">
+                    <Card>
+                        <h3 className="text-xl font-bold mb-2">Consumer App</h3>
+                        <p className="text-muted text-sm mb-6 h-10">Immediate value + controlled data collection. Audio-based stimulation targeting the vagus nerve.</p>
+                        <div className="flex gap-2">
+                        <Pill>CHECK-IN</Pill>
+                        <Pill>THERAPY</Pill>
+                        </div>
+                    </Card>
+                    <Card>
+                        <h3 className="text-xl font-bold mb-2">SDK / API</h3>
+                        <p className="text-muted text-sm mb-6 h-10">Licensing the analysis + stimulation layer to partners. Physiology-based signals for any platform.</p>
+                        <div className="flex gap-2">
+                        <Pill>Stress Index</Pill>
+                        <Pill>State Change</Pill>
+                        </div>
+                    </Card>
+                    </div>
+                </div>
+                </SlideSection>
+
+                {/* SLIDE 4: THE NEUROACOUSTIC LOOP */}
+                <SlideSection index={4}>
+                    <GlowOrb color={PALETTES[4][0]} />
+                    <TopBar title="The Neuroacoustic Loop" />
+                    <div className="flex-grow flex flex-col justify-center items-center">
+                        <div className="text-center mb-6 animate-[fadeInUp_0.6s_ease-out_0.1s_both]">
+                            <h2 className="text-3xl md:text-5xl font-bold mb-4">Precision Audio Medicine</h2>
+                            <p className="text-lg text-gray-300 max-w-2xl mx-auto">
+                                Directly stimulating the Vagus Nerve to balance the Autonomic Nervous System.
+                            </p>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-12 w-full max-w-6xl items-center animate-[fadeInUp_0.6s_ease-out_0.3s_both]">
+                            <div className="flex flex-col gap-6">
+                                <FeedbackLoopGraphic />
+                                <AnsBalanceVisual />
+                            </div>
+
+                            <div className="flex flex-col justify-center gap-6">
+                                <div className="space-y-4">
+                                        <div>
+                                        <h3 className="text-xl font-bold text-white mb-2">Vagus Nerve Stimulation (VNS)</h3>
+                                        <p className="text-sm text-gray-400">
+                                            Our core mechanism uses specific frequency sets to engage the parasympathetic nervous system, shifting the body from a high-stress "fight-or-flight" state to "rest-and-digest".
+                                        </p>
+                                        </div>
+                                        <div className="h-px bg-white/10 w-full" />
+                                        <div>
+                                        <h3 className="text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan to-purple mb-2">4 Layers of Adaptive Audio</h3>
+                                        <p className="text-sm text-gray-400 mb-4">
+                                            We don't just play music. We construct a dynamic therapeutic soundscape. These 4 layers adapt in real-time to your voice biomarkers.
+                                        </p>
+                                        <AbstractLayerVisual />
+                                        </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </SlideSection>
+
+                {/* SLIDE 5: VALIDATION */}
+                <SlideSection index={5}>
+                <GlowOrb color={PALETTES[5][0]} />
+                <TopBar title="Validation" />
+                <div className="flex-grow flex flex-col justify-center items-center">
+                    <div className="text-center max-w-3xl mb-12 animate-[fadeInUp_0.6s_ease-out_0.1s_both]">
+                    <h2 className="text-3xl md:text-5xl font-bold mb-4">The Closed-Loop Advantage</h2>
+                    <p className="text-gray-300 text-lg">Therapy is not “another product”, it’s the controlled intervention that validates biomarkers and accelerates learning.</p>
+                    </div>
+
+                    <div className="flex flex-col md:flex-row items-center justify-center gap-4 md:gap-8 w-full max-w-4xl mb-12 animate-[fadeInUp_0.6s_ease-out_0.3s_both]">
+                    <div className="bg-white/5 border border-white/10 rounded-xl p-6 text-center w-48">
+                        <Tag>T-Zero</Tag>
+                        <h3 className="text-xl font-bold">Measure</h3>
+                        <p className="text-xs text-muted uppercase mt-1">Voice Baseline</p>
+                    </div>
+                    <div className="text-2xl text-cyan rotate-90 md:rotate-0">→</div>
+                    <div className="bg-cyan/5 border border-cyan/40 rounded-xl p-6 text-center w-48 shadow-[0_0_20px_rgba(0,240,255,0.1)]">
+                        <Tag color="text-cyan">Action</Tag>
+                        <h3 className="text-xl font-bold">Intervene</h3>
+                        <p className="text-xs text-muted uppercase mt-1">Audio Therapy</p>
+                    </div>
+                    <div className="text-2xl text-cyan rotate-90 md:rotate-0">→</div>
+                    <div className="bg-white/5 border border-white/10 rounded-xl p-6 text-center w-48">
+                        <Tag>T-One</Tag>
+                        <h3 className="text-xl font-bold">Verify</h3>
+                        <p className="text-xs text-muted uppercase mt-1">Biomarker Shift</p>
+                    </div>
+                    </div>
+                    
+                    <Card className="max-w-2xl text-center border-accent-gold/30 bg-accent-gold/5 animate-[fadeInUp_0.6s_ease-out_0.5s_both]">
+                    <p className="text-lg md:text-xl font-medium italic text-white/90">"If the physiological state changes and the biomarker moves with it, the biomarker is meaningful."</p>
+                    </Card>
+                </div>
+                </SlideSection>
+
+                {/* SLIDE 6: TRACTION */}
+                <SlideSection index={6}>
+                <GlowOrb color={PALETTES[6][0]} />
+                <TopBar title="Traction" />
+                <div className="flex-grow flex flex-col justify-center">
+                    <div className="mb-12 animate-[fadeInUp_0.6s_ease-out_0.1s_both]">
+                    <h2 className="text-3xl md:text-5xl font-bold mb-4">Clinical & Commercial <span className="text-accent-gold">Proof</span></h2>
+                    <p className="text-gray-300 text-lg">Objective physiological outcomes, plus real distribution partners.</p>
+                    </div>
+
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 w-full animate-[fadeInUp_0.6s_ease-out_0.3s_both]">
+                    <Card>
+                        <Tag color="text-accent-gold">Clinical Data</Tag>
+                        <div className="grid grid-cols-2 gap-6 mb-8 mt-4">
+                        <AnimatedStatBox value="-100%" label="High Stress" isActive={currentSlide === 6} />
+                        <AnimatedStatBox value="+262%" label="Resting State" isActive={currentSlide === 6} />
+                        </div>
+                        <p className="text-xl md:text-2xl font-semibold leading-relaxed text-white">
+                        Objective physiological improvement (Garmin) aligns with statistically significant clinical outcomes over placebo.
+                        </p>
+                    </Card>
+
+                    <Card>
+                        <Tag>Business</Tag>
+                        <h3 className="text-2xl font-bold mb-6">Commercial</h3>
+                        <div className="grid grid-cols-2 gap-6 mb-8">
+                        <AnimatedStatBox value="4000+" label="Users" isActive={currentSlide === 6} />
+                        <AnimatedStatBox value="$900K" label="Raised" isActive={currentSlide === 6} />
+                        </div>
+                        
+                        <div className="flex flex-col gap-4 text-left mt-2">
+                            <div>
+                                <div className="text-[10px] uppercase tracking-widest text-accent-gold font-bold mb-1">Signed</div>
+                                <div className="text-sm font-medium pl-3 border-l-2 border-accent-gold/50">Isracard & Maccabi Club</div>
+                            </div>
+                            <div>
+                                <div className="text-[10px] uppercase tracking-widest text-accent-gold font-bold mb-1">Pilot</div>
+                                <div className="text-sm font-medium pl-3 border-l-2 border-accent-gold/50">Israeli Ministry of Defense</div>
+                            </div>
+                            <div className="h-px bg-white/5 my-1"></div>
+                            <div>
+                                <div className="text-[10px] uppercase tracking-widest text-muted font-bold mb-1">Negotiations</div>
+                                <div className="text-xs text-gray-300 pl-3 border-l-2 border-white/10">Maccabi Health Services – nationwide rollout discussions</div>
+                            </div>
+                            <div>
+                                <div className="text-[10px] uppercase tracking-widest text-muted font-bold mb-1">Advanced Discussions</div>
+                                <div className="text-xs text-gray-300 pl-3 border-l-2 border-white/10 flex flex-col gap-1">
+                                    <span>Two wearable / sensor companies</span>
+                                    <span>One major U.S./Japan corporate wellness provider</span>
+                                </div>
+                            </div>
+                        </div>
+                    </Card>
+                    </div>
+                    
+                    <Card className="mt-8 flex flex-wrap justify-between items-center gap-4 animate-[fadeInUp_0.6s_ease-out_0.5s_both]">
+                    <div className="flex items-center gap-3"><span className="px-2 py-1 rounded bg-white/10 text-[10px] uppercase font-bold">Defensibility</span> <span className="text-sm md:text-base font-bold">2 Patents Filed, 1 Approved</span></div>
+                    <div className="flex items-center gap-3"><span className="px-2 py-1 rounded bg-white/10 text-[10px] uppercase font-bold">Asset</span> <span className="text-sm md:text-base font-bold">Outcome-Linked Voice Dataset</span></div>
+                    </Card>
+                </div>
+                </SlideSection>
+
+                {/* SLIDE 7: MARKET OPPORTUNITY */}
+                <SlideSection index={7}>
+                    <GlowOrb color={PALETTES[7][0]} />
+                    <TopBar title="Market Opportunity" />
+                    <div className="flex-grow flex flex-col justify-center">
+                        <div className="mb-8 animate-[fadeInUp_0.6s_ease-out_0.1s_both]">
+                            <h2 className="text-2xl md:text-4xl font-bold mb-4 leading-tight">TuneMe Sits at the Intersection of Wearables, Wellness, and Digital Health</h2>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full animate-[fadeInUp_0.6s_ease-out_0.3s_both]">
+                            <Card className="flex flex-col border-t-4 border-t-white/20 bg-gradient-to-b from-white/5 to-transparent">
+                                <Tag className="mb-4">Global Potential (TAM)</Tag>
+                                <AnimatedStatBox value="$500B+" label="Global Market" isActive={currentSlide === 7} />
+                                <ul className="mt-6 space-y-3 text-sm text-gray-300">
+                                    <li className="flex items-start gap-2"><span className="text-[#38ef7d] mt-1">▸</span> across wearables, digital wellness, corporate health, and digital therapeutics by 2030</li>
+                                    <li className="flex items-start gap-2"><span className="text-[#38ef7d] mt-1">▸</span> 1.1B wearables in use globally by 2030</li>
+                                    <li className="flex items-start gap-2"><span className="text-[#38ef7d] mt-1">▸</span> $200B+ in mental health and stress-related care spending</li>
+                                </ul>
+                            </Card>
+
+                            <Card className="flex flex-col border-t-4 border-t-[#38ef7d]/50 bg-gradient-to-b from-[#38ef7d]/10 to-transparent">
+                                <Tag className="mb-4" color="text-[#38ef7d]">U.S. Serviceable (SAM)</Tag>
+                                <AnimatedStatBox value="$60-80B" label="U.S. Market" isActive={currentSlide === 7} />
+                                <ul className="mt-6 space-y-3 text-sm text-gray-300">
+                                    <li className="flex items-start gap-2"><span className="text-[#38ef7d] mt-1">▸</span> focused on stress, sleep, and mental well-being platforms</li>
+                                    <li className="flex items-start gap-2"><span className="text-[#38ef7d] mt-1">▸</span> 80M+ Americans use wearables</li>
+                                    <li className="flex items-start gap-2"><span className="text-[#38ef7d] mt-1">▸</span> 1,000+ wellness, sleep & mental health apps</li>
+                                    <li className="flex items-start gap-2"><span className="text-[#38ef7d] mt-1">▸</span> $50B+ spent annually on employer & payer wellness programs</li>
+                                </ul>
+                            </Card>
+
+                            <Card className="flex flex-col border-t-4 border-t-[#38ef7d] bg-gradient-to-b from-[#38ef7d]/20 to-transparent shadow-[0_0_30px_rgba(56,239,125,0.1)]">
+                                <Tag className="mb-4" color="text-[#38ef7d]">Initial Target (SOM)</Tag>
+                                <AnimatedStatBox value="$250-500M" label="ARR Potential" isActive={currentSlide === 7} />
+                                <ul className="mt-6 space-y-3 text-sm text-white">
+                                    <li className="flex items-start gap-2"><span className="text-white mt-1">▸</span> over 3-5 years</li>
+                                    <li className="flex items-start gap-2"><span className="text-white mt-1">▸</span> SDK integrations across top 50 wearables & sensor OEMs</li>
+                                    <li className="flex items-start gap-2"><span className="text-white mt-1">▸</span> 10–15 strategic B2B partners (apps, payers, wellness platforms)</li>
+                                    <li className="flex items-start gap-2"><span className="text-white mt-1">▸</span> Est. 25-50M end-users, $8-12/user/year licensing</li>
+                                </ul>
+                            </Card>
+                        </div>
+
+                        <div className="mt-8 animate-[fadeInUp_0.6s_ease-out_0.5s_both]">
+                            <Card className="flex flex-col md:flex-row items-center justify-between gap-6 py-6 px-8 bg-white/[0.03]">
+                                <div className="flex-1">
+                                    <h3 className="text-lg font-bold mb-2 text-white">Why Now?</h3>
+                                    <p className="text-sm text-gray-300 leading-relaxed space-y-2">
+                                        <span className="block">• Wearables show you’re stressed <span className="font-bold text-white">TuneMe treats it</span></span>
+                                        <span className="block">• Clinical-grade biomarkers via voice = <span className="text-[#38ef7d]">no new hardware</span></span>
+                                        <span className="block">• SDK unlocks low-friction therapeutic value + regulatory upside</span>
+                                    </p>
+                                </div>
+                                <div className="text-[10px] text-muted text-right max-w-xs opacity-60">
+                                    Sources:
+                                    <br/>- IDC, Fortune Business Insights (wearables + CAGR)
+                                    <br/>- Rock Health, CB Insights (digital health + app count)
+                                    <br/>- NIH, McKinsey, Deloitte (mental health + employer spend)
+                                </div>
+                            </Card>
+                        </div>
+                    </div>
+                </SlideSection>
+
+                {/* SLIDE 8: STRATEGY */}
+                <SlideSection index={8}>
+                <GlowOrb color={PALETTES[8][0]} />
+                <TopBar title="Strategy" />
+                <div className="flex-grow flex flex-col justify-center">
+                    <h2 className="text-3xl md:text-5xl font-bold mb-8 animate-[fadeInUp_0.6s_ease-out_0.1s_both]">Why Big Tech Cares</h2>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12 animate-[fadeInUp_0.6s_ease-out_0.3s_both]">
+                    <Card className="flex flex-col items-center text-center">
+                        <StatBox value="Zero HW" label="No device dependency" />
+                    </Card>
+                    <Card className="flex flex-col items-center text-center">
+                        <StatBox value="API" label="Licensable layer" />
+                    </Card>
+                    <Card className="flex flex-col items-center text-center">
+                        <StatBox value="Data" label="Clinically linked" />
+                    </Card>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 animate-[fadeInUp_0.6s_ease-out_0.5s_both]">
+                    <Card>
+                        <h3 className="text-xl font-bold mb-4">Monetization</h3>
+                        <ul className="space-y-3 text-gray-300">
+                        <li className="flex items-center gap-2"><span className="text-cyan">✓</span> SDK Licensing (per user)</li>
+                        <li className="flex items-center gap-2"><span className="text-cyan">✓</span> Enterprise Wellness (B2B2C)</li>
+                        <li className="flex items-center gap-2"><span className="text-cyan">✓</span> Consumer Subscription</li>
+                        </ul>
+                    </Card>
+                    <Card>
+                        <h3 className="text-xl font-bold mb-4">Targets</h3>
+                        <div className="flex flex-wrap gap-2">
+                        <Pill>Health Platforms</Pill>
+                        <Pill>Mental Health Apps</Pill>
+                        <Pill>Sleep Apps</Pill>
+                        <Pill>Voice Assistants</Pill>
+                        </div>
+                    </Card>
+                    </div>
+                </div>
+                </SlideSection>
+
+                {/* SLIDE 9: TEAM */}
+                <SlideSection index={9}>
+                <GlowOrb color={PALETTES[9][0]} />
+                <TopBar title="Team" />
+                <div className="flex-grow flex flex-col justify-center">
+                    <h2 className="text-3xl md:text-4xl font-bold mb-12 animate-[fadeInUp_0.6s_ease-out_0.1s_both]">Built at the intersection of audio + medicine</h2>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12 animate-[fadeInUp_0.6s_ease-out_0.3s_both]">
+                    <div className="flex flex-col md:flex-row gap-6 items-start bg-white/5 border border-white/10 rounded-2xl p-6 backdrop-blur-sm">
+                        <div className="w-24 h-24 flex-shrink-0 rounded-full bg-[#222] border-2 border-white/10 overflow-hidden">
+                        <img src={TEAM_DATA.itai.image} alt={TEAM_DATA.itai.name} className="w-full h-full object-cover" />
+                        </div>
+                        <div>
+                        <div className="text-[10px] uppercase tracking-wider font-bold text-accent-pink mb-1">{TEAM_DATA.itai.role}</div>
+                        <h3 className="text-2xl font-bold mb-2">{TEAM_DATA.itai.name}</h3>
+                        <p className="text-sm text-muted leading-relaxed">{TEAM_DATA.itai.bio}</p>
+                        </div>
+                    </div>
+
+                    <div className="flex flex-col md:flex-row gap-6 items-start bg-white/5 border border-white/10 rounded-2xl p-6 backdrop-blur-sm">
+                        <div className="w-24 h-24 flex-shrink-0 rounded-full bg-[#222] border-2 border-white/10 overflow-hidden">
+                        <img src={TEAM_DATA.motti.image} alt={TEAM_DATA.motti.name} className="w-full h-full object-cover" />
+                        </div>
+                        <div>
+                        <div className="text-[10px] uppercase tracking-wider font-bold text-accent-pink mb-1">{TEAM_DATA.motti.role}</div>
+                        <h3 className="text-2xl font-bold mb-2">{TEAM_DATA.motti.name}</h3>
+                        <p className="text-sm text-muted leading-relaxed">{TEAM_DATA.motti.bio}</p>
+                        </div>
+                    </div>
+                    </div>
+
+                    <Card className="border-t-purple/50 bg-purple/5 animate-[fadeInUp_0.6s_ease-out_0.5s_both]">
+                        <h3 className="text-lg font-bold mb-2">Advisors</h3>
+                        <p className="text-sm text-gray-300 leading-relaxed">
+                            Prof. Gil Zalsman (Columbia University) • Dr. Samanta Dall Agnese (Sleep Medicine) • Maxime El Baz, Ph.D. (Neuroscience, Digital Health, AI)
+                        </p>
+                    </Card>
+                </div>
+                </SlideSection>
+
+                {/* SLIDE 10: CONTACT */}
+                <SlideSection index={10}>
+                <GlowOrb color={PALETTES[10][1]} highIntensity={true} />
+                <TopBar title="TuneMe AI" />
+                <div className="flex-grow flex flex-col items-center justify-center text-center relative z-10">
+                    
+                    <div className="mb-16 animate-[fadeInUp_0.6s_ease-out_0.1s_both]">
+                    <h1 className="text-6xl md:text-8xl lg:text-9xl font-extrabold leading-[0.9] tracking-tighter mb-8">
+                        <span className="text-transparent bg-clip-text bg-gradient-to-br from-white via-white to-gray-400">Listen.</span><br/>
+                        <span className="text-transparent bg-clip-text bg-gradient-to-br from-white via-white to-gray-400">Analyze.</span><br/>
+                        <span className="text-transparent bg-clip-text bg-gradient-to-br from-cyan to-purple">Act.</span>
+                    </h1>
+                    <p className="text-xl md:text-2xl text-white/80 max-w-2xl mx-auto">
+                        The world already has the sensors. <br/>TuneMe delivers the <span className="font-bold text-white">rest</span>.
+                    </p>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 w-full max-w-lg mb-12 animate-[fadeInUp_0.6s_ease-out_0.3s_both]">
+                        <a href="mailto:itai@tuneme.io" className="bg-purple/10 border border-purple/30 rounded-xl p-6 flex flex-col items-center gap-2 hover:bg-purple/20 transition-colors group">
+                        <span className="text-xs uppercase tracking-widest text-white/70 group-hover:text-white">Get in Touch</span>
+                        <span className="text-xl font-bold text-white">itai@tuneme.io</span>
+                        </a>
+                        <a href="https://tuneme.io" target="_blank" rel="noreferrer" className="bg-cyan/10 border border-cyan/30 rounded-xl p-6 flex flex-col items-center gap-2 hover:bg-cyan/20 transition-colors group">
+                        <span className="text-xs uppercase tracking-widest text-white/70 group-hover:text-white">Visit Website</span>
+                        <span className="text-xl font-bold text-white">tuneme.io</span>
+                        </a>
+                    </div>
+
+                    <div className="mt-16 text-[10px] md:text-xs text-white/30 tracking-[0.2em] animate-[fadeIn_1s_ease-out_0.8s_both]">
+                    TUNEME AI © 2026 • PROPRIETARY & CONFIDENTIAL
+                    </div>
+
+                </div>
+                </SlideSection>
+
+            </div>
+            </div>
+        );
+        };
+
+        const rootElement = document.getElementById('root');
+        const root = ReactDOM.createRoot(rootElement);
+        root.render(<App />);
+    </script>
 <script type="module" src="/index.tsx"></script>
 </body>
 </html>
