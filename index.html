@@ -18,6 +18,14 @@
     <!-- Babel for JSX compilation in browser -->
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
+    <!-- html2canvas and PptxGenJS for PPTX Export -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/gitbrent/pptxgenjs@3.12.0/libs/jszip.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/gitbrent/pptxgenjs@3.12.0/dist/pptxgen.min.js"></script>
+    
+    <!-- jsPDF for PDF Export -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
     <script>
         tailwind.config = {
             theme: {
@@ -107,7 +115,14 @@
 <body>
     <div id="root"></div>
 
-    <script type="text/babel" data-presets="env,react">
+    <script>
+        Babel.registerPreset('react-classic', {
+            presets: [
+                [Babel.availablePresets['react'], { runtime: 'classic' }]
+            ]
+        });
+    </script>
+    <script type="text/babel" data-presets="env,react-classic">
         const { useState, useEffect, useRef, useMemo } = React;
 
         // --- CONSTANTS ---
@@ -152,24 +167,29 @@
             />
         );
 
-        const TopBar = ({ title }) => (
-            <div className="flex justify-between items-center w-full mb-12 animate-[fadeInDown_0.6s_ease-out_forwards]">
-                <div className="flex items-center gap-2 text-[13px] tracking-[0.15em] uppercase text-muted font-medium">
-                    <span className="w-1.5 h-1.5 bg-cyan rounded-full shadow-[0_0_8px_#00f0ff]"></span> {title}
+        const TopBar = ({ title }) => {
+            const [imgError, setImgError] = useState(false);
+            return (
+                <div className="top-bar-container flex justify-between items-center w-full mb-12 animate-[fadeInDown_0.6s_ease-out_forwards]">
+                    <div className="flex items-center gap-2 text-[13px] tracking-[0.15em] uppercase text-muted font-medium">
+                        <span className="w-1.5 h-1.5 bg-cyan rounded-full shadow-[0_0_8px_#00f0ff]"></span> {title}
+                    </div>
+                    <div className="text-xl font-bold tracking-widest text-white">
+                        {!imgError ? (
+                            <img 
+                                src="https://tuneme.io/images/logo.png" 
+                                alt="TuneMe" 
+                                className="h-8 object-contain"
+                                crossOrigin="anonymous"
+                                onError={() => setImgError(true)}
+                            />
+                        ) : (
+                            "TuneMe"
+                        )}
+                    </div>
                 </div>
-                <div>
-                    <img 
-                        src="https://tuneme.io/images/logo.png" 
-                        alt="TuneMe" 
-                        className="h-8 object-contain"
-                        onError={(e) => {
-                            e.target.style.display = 'none';
-                            if (e.target.parentNode) e.target.parentNode.innerText = 'TuneMe';
-                        }}
-                    />
-                </div>
-            </div>
-        );
+            );
+        };
 
         const Card = ({ children, className = '' }) => (
             <div className={`bg-[#0f0f16]/60 border border-white/10 rounded-2xl p-8 backdrop-blur-md shadow-lg ${className}`}>
@@ -360,7 +380,7 @@
             ];
 
             return (
-                <div ref={menuRef} className="fixed top-[30px] right-[30px] z-[2000]">
+                <div ref={menuRef} className="fixed top-[30px] right-[30px] z-[2000] hide-on-export">
                 <button 
                     className="w-11 h-11 rounded-full border border-white/20 bg-white/5 text-white cursor-pointer backdrop-blur-sm transition-all duration-200 flex items-center justify-center hover:bg-white/15 hover:border-white/40"
                     onClick={() => setIsOpen(!isOpen)} 
@@ -589,6 +609,229 @@
             );
         }
 
+        // --- EXPORT BUTTON ---
+        const ExportButton = ({ currentSlide, setCurrentSlide, totalSlides }) => {
+            const [isExporting, setIsExporting] = useState(false);
+            const [isExportingPDF, setIsExportingPDF] = useState(false);
+
+            const handleExport = async () => {
+                if (isExporting || isExportingPDF) return;
+                setIsExporting(true);
+                
+                try {
+                    const pptx = new PptxGenJS();
+                    pptx.layout = 'LAYOUT_16x9';
+                    
+                    pptx.defineSlideMaster({
+                        title: 'MASTER_DARK',
+                        background: { color: '050510' },
+                        defaultTextStyle: { color: 'FFFFFF', fontFace: 'Arial' }
+                    });
+                    
+                    const slides = document.querySelectorAll('.slide-section');
+                    
+                    slides.forEach((slideEl) => {
+                        const pptSlide = pptx.addSlide({ masterName: 'MASTER_DARK' });
+                        
+                        // 1. Extract TopBar
+                        const topBar = slideEl.querySelector('.uppercase.text-muted');
+                        const slideTitle = topBar ? topBar.innerText.replace('TuneMe', '').trim() : '';
+                        
+                        if (slideTitle) {
+                            pptSlide.addText(slideTitle, {
+                                x: 0.5, y: 0.3, w: 9, h: 0.4,
+                                fontSize: 14, color: '00F0FF', bold: true, uppercase: true
+                            });
+                        }
+                        
+                        // 2. Extract Main Heading (h1, h2)
+                        const h1 = slideEl.querySelector('h1');
+                        const h2 = slideEl.querySelector('h2');
+                        const mainHeading = h1 ? h1.innerText : (h2 ? h2.innerText : '');
+                        
+                        let currentY = 0.8;
+                        if (mainHeading) {
+                            pptSlide.addText(mainHeading, {
+                                x: 0.5, y: currentY, w: 9, h: 1.0,
+                                fontSize: 36, color: 'FFFFFF', bold: true, valign: 'top'
+                            });
+                            currentY += mainHeading.length > 60 ? 1.2 : 0.8;
+                        }
+                        
+                        // 3. Extract Paragraphs
+                        const paragraphs = Array.from(slideEl.querySelectorAll('p')).map(p => p.innerText.trim()).filter(t => t.length > 0);
+                        if (paragraphs.length > 0) {
+                            const pText = paragraphs.join('\n\n');
+                            pptSlide.addText(pText, {
+                                x: 0.5, y: currentY, w: 9, h: 1.5,
+                                fontSize: 18, color: 'D0D0E0', valign: 'top'
+                            });
+                            currentY += pText.length > 200 ? 1.8 : 1.2;
+                        }
+                        
+                        // 4. Extract other content (Cards, Stats, Tags)
+                        const clone = slideEl.cloneNode(true);
+                        const hiddenDiv = document.createElement('div');
+                        hiddenDiv.style.position = 'absolute';
+                        hiddenDiv.style.left = '-9999px';
+                        hiddenDiv.style.visibility = 'hidden';
+                        hiddenDiv.appendChild(clone);
+                        document.body.appendChild(hiddenDiv);
+                        
+                        const toRemove = clone.querySelectorAll('.top-bar-container, h1, h2, p, img, svg');
+                        toRemove.forEach(el => el.remove());
+                        
+                        let remainingText = clone.innerText.trim();
+                        document.body.removeChild(hiddenDiv);
+                        
+                        if (remainingText) {
+                            remainingText = remainingText.replace(/\n{3,}/g, '\n\n');
+                            
+                            pptSlide.addText(remainingText, {
+                                x: 0.5, y: currentY, w: 9, h: 5.2 - currentY,
+                                fontSize: 16, color: 'A0A0B0', valign: 'top'
+                            });
+                        }
+                    });
+                    
+                    await pptx.writeFile({ fileName: 'TuneMe_Deck_Text.pptx' });
+                } catch (err) {
+                    console.error("Export failed", err);
+                    alert("Export failed. Please try again.");
+                } finally {
+                    setIsExporting(false);
+                }
+            };
+            
+            const handleExportPDF = async () => {
+                if (isExporting || isExportingPDF) return;
+                setIsExportingPDF(true);
+                
+                try {
+                    const { jsPDF } = window.jspdf;
+                    const doc = new jsPDF({
+                        orientation: 'landscape',
+                        unit: 'in',
+                        format: [10, 5.625] // 16:9 ratio
+                    });
+                    
+                    const slides = document.querySelectorAll('.slide-section');
+                    
+                    slides.forEach((slideEl, index) => {
+                        if (index > 0) {
+                            doc.addPage();
+                        }
+                        
+                        // Dark background
+                        doc.setFillColor(5, 5, 16); // #050510
+                        doc.rect(0, 0, 10, 5.625, 'F');
+                        
+                        // 1. Extract TopBar
+                        const topBar = slideEl.querySelector('.uppercase.text-muted');
+                        const slideTitle = topBar ? topBar.innerText.replace('TuneMe', '').trim() : '';
+                        
+                        if (slideTitle) {
+                            doc.setTextColor(0, 240, 255); // #00F0FF
+                            doc.setFontSize(14);
+                            doc.setFont("helvetica", "bold");
+                            doc.text(slideTitle.toUpperCase(), 0.5, 0.6);
+                        }
+                        
+                        // 2. Extract Main Heading (h1, h2)
+                        const h1 = slideEl.querySelector('h1');
+                        const h2 = slideEl.querySelector('h2');
+                        const mainHeading = h1 ? h1.innerText : (h2 ? h2.innerText : '');
+                        
+                        let currentY = 1.3;
+                        if (mainHeading) {
+                            doc.setTextColor(255, 255, 255);
+                            doc.setFontSize(32);
+                            doc.setFont("helvetica", "bold");
+                            const splitTitle = doc.splitTextToSize(mainHeading, 9);
+                            doc.text(splitTitle, 0.5, currentY);
+                            currentY += (splitTitle.length * 0.4) + 0.2;
+                        }
+                        
+                        // 3. Extract Paragraphs
+                        const paragraphs = Array.from(slideEl.querySelectorAll('p')).map(p => p.innerText.trim()).filter(t => t.length > 0);
+                        if (paragraphs.length > 0) {
+                            const pText = paragraphs.join('\n\n');
+                            doc.setTextColor(208, 208, 224); // #D0D0E0
+                            doc.setFontSize(16);
+                            doc.setFont("helvetica", "normal");
+                            const splitPara = doc.splitTextToSize(pText, 9);
+                            doc.text(splitPara, 0.5, currentY);
+                            currentY += (splitPara.length * 0.25) + 0.3;
+                        }
+                        
+                        // 4. Extract other content
+                        const clone = slideEl.cloneNode(true);
+                        const hiddenDiv = document.createElement('div');
+                        hiddenDiv.style.position = 'absolute';
+                        hiddenDiv.style.left = '-9999px';
+                        hiddenDiv.style.visibility = 'hidden';
+                        hiddenDiv.appendChild(clone);
+                        document.body.appendChild(hiddenDiv);
+                        
+                        const toRemove = clone.querySelectorAll('.top-bar-container, h1, h2, p, img, svg');
+                        toRemove.forEach(el => el.remove());
+                        
+                        let remainingText = clone.innerText.trim();
+                        document.body.removeChild(hiddenDiv);
+                        
+                        if (remainingText) {
+                            remainingText = remainingText.replace(/\n{3,}/g, '\n\n');
+                            
+                            doc.setTextColor(160, 160, 176); // #A0A0B0
+                            doc.setFontSize(14);
+                            doc.setFont("helvetica", "normal");
+                            const splitRem = doc.splitTextToSize(remainingText, 9);
+                            
+                            // limit to not overflow page
+                            let remLines = splitRem;
+                            if (currentY + (remLines.length * 0.25) > 5.4) {
+                                let allowedLines = Math.floor((5.4 - currentY) / 0.25);
+                                if (allowedLines > 0) {
+                                    remLines = remLines.slice(0, allowedLines);
+                                } else {
+                                    remLines = [];
+                                }
+                            }
+                            if (remLines.length > 0) {
+                                doc.text(remLines, 0.5, currentY);
+                            }
+                        }
+                    });
+                    
+                    doc.save('TuneMe_Deck_Text.pdf');
+                } catch (err) {
+                    console.error("Export failed", err);
+                    alert("Export failed. Please try again.");
+                } finally {
+                    setIsExportingPDF(false);
+                }
+            };
+
+            return (
+                <div className="fixed top-[30px] right-[90px] z-[2000] flex gap-2 hide-on-export">
+                    <button 
+                        onClick={handleExport}
+                        disabled={isExporting || isExportingPDF}
+                        className="h-11 px-4 rounded-full border border-white/20 bg-white/5 text-white text-sm font-medium cursor-pointer backdrop-blur-sm transition-all duration-200 flex items-center justify-center hover:bg-white/15 hover:border-white/40 disabled:opacity-50"
+                    >
+                        {isExporting ? 'Exporting...' : 'Export PPTX'}
+                    </button>
+                    <button 
+                        onClick={handleExportPDF}
+                        disabled={isExporting || isExportingPDF}
+                        className="h-11 px-4 rounded-full border border-cyan/40 bg-cyan/10 text-cyan text-sm font-bold cursor-pointer backdrop-blur-sm transition-all duration-200 flex items-center justify-center hover:bg-cyan/20 hover:border-cyan/60 disabled:opacity-50"
+                    >
+                        {isExportingPDF ? 'Exporting...' : 'Export PDF'}
+                    </button>
+                </div>
+            );
+        };
+
         // --- APP MAIN ---
         const App = () => {
         const [currentSlide, setCurrentSlide] = useState(0);
@@ -631,7 +874,7 @@
 
         const SlideSection = ({ index, children, className = '' }) => (
             <section 
-                className={`w-screen h-[100dvh] flex-shrink-0 overflow-y-auto overflow-x-hidden p-6 md:p-12 relative transition-opacity duration-500 ${index === currentSlide ? 'opacity-100 pointer-events-auto' : 'opacity-20 pointer-events-none'} ${className}`}
+                className={`slide-section w-screen h-[100dvh] flex-shrink-0 overflow-y-auto overflow-x-hidden p-6 md:p-12 relative transition-opacity duration-500 ${index === currentSlide ? 'opacity-100 pointer-events-auto' : 'opacity-20 pointer-events-none'} ${className}`}
                 aria-hidden={index !== currentSlide}
             >
                 <div className="max-w-7xl mx-auto min-h-full flex flex-col slide-content pb-32 md:pb-20 relative z-10">
@@ -641,19 +884,21 @@
         );
 
         return (
-            <div className="fixed inset-0 overflow-hidden font-sans text-white bg-bg selection:bg-cyan/30 h-[100dvh]">
+            <div id="app-container" className="fixed inset-0 overflow-hidden font-sans text-white bg-bg selection:bg-cyan/30 h-[100dvh]">
             <Background currentSlide={currentSlide} />
             
-            <div className="fixed top-0 left-0 h-1 bg-cyan z-50 transition-[width] duration-300 ease-out" style={{ width: `${((currentSlide + 1) / totalSlides) * 100}%` }}></div>
+            <div className="fixed top-0 left-0 h-1 bg-cyan z-50 transition-[width] duration-300 ease-out hide-on-export" style={{ width: `${((currentSlide + 1) / totalSlides) * 100}%` }}></div>
 
             <ShareButton />
+            <ExportButton currentSlide={currentSlide} setCurrentSlide={setCurrentSlide} totalSlides={totalSlides} />
 
-            <div className="fixed bottom-6 left-1/2 -translate-x-1/2 md:left-auto md:translate-x-0 md:right-6 z-50 flex gap-6 md:gap-3">
+            <div className="fixed bottom-6 left-1/2 -translate-x-1/2 md:left-auto md:translate-x-0 md:right-6 z-50 flex gap-6 md:gap-3 hide-on-export">
                 <button className="w-14 h-14 md:w-11 md:h-11 rounded-full border border-white/20 bg-white/10 text-white text-xl md:text-lg flex items-center justify-center hover:bg-white/20 transition-colors backdrop-blur-md shadow-lg active:scale-95" onClick={prevSlide} aria-label="Previous Slide">←</button>
                 <button className="w-14 h-14 md:w-11 md:h-11 rounded-full border border-white/20 bg-white/10 text-white text-xl md:text-lg flex items-center justify-center hover:bg-white/20 transition-colors backdrop-blur-md shadow-lg active:scale-95" onClick={nextSlide} aria-label="Next Slide">→</button>
             </div>
 
             <div 
+                id="slider-container"
                 className="flex h-full w-full transition-transform duration-700 cubic-bezier(0.16, 1, 0.3, 1)" 
                 style={{ transform: `translateX(-${currentSlide * 100}vw)` }}
                 onTouchStart={onTouchStart}
